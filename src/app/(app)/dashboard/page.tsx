@@ -15,23 +15,31 @@ import {
   Line,
 } from 'recharts';
 import { Users, GraduationCap, BookOpen, Activity } from 'lucide-react';
-import { students, teachers, courses } from '@/lib/data';
+import { teachers, courses, students as staticStudents } from '@/lib/data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { Student } from '@/lib/types';
 
 export default function DashboardPage() {
+  const [students, setStudents] = useState<Student[]>([]);
   const [selectedClass, setSelectedClass] = useState('all');
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
+    setStudents(staticStudents);
   }, []);
 
+  const generateClassAttendance = (base: number) => {
+    if (selectedClass === 'all' || !isClient) return base;
+    return Math.min(100, Math.max(70, base + (parseInt(selectedClass, 10) - 5) * 1.5 + (Math.random() - 0.5) * 5));
+  };
+  
   const filteredStudents = useMemo(() => {
     if (selectedClass === 'all') {
       return students;
     }
     return students.filter(s => s.class === selectedClass);
-  }, [selectedClass]);
+  }, [selectedClass, students]);
 
   const performanceData = useMemo(() => {
     const data = [
@@ -43,6 +51,7 @@ export default function DashboardPage() {
     ];
   
     filteredStudents.forEach(s => {
+      if (s.grades.length === 0) return;
       const avg = s.grades.reduce((a, b) => a + b, 0) / s.grades.length;
       if (avg >= 90) data[0].students++;
       else if (avg >= 80) data[1].students++;
@@ -54,10 +63,6 @@ export default function DashboardPage() {
     return data;
   }, [filteredStudents]);
 
-  const generateClassAttendance = (base: number) => {
-    if (selectedClass === 'all' || !isClient) return base;
-    return Math.min(100, Math.max(70, base + (parseInt(selectedClass, 10) - 5) * 1.5 + (Math.random() - 0.5) * 5));
-  };
   
   const attendanceData = useMemo(() => {
     // This is mock data as we don't have monthly attendance
@@ -113,7 +118,7 @@ export default function DashboardPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalStudents}</div>
+            <div className="text-2xl font-bold">{totalStudents > 0 ? totalStudents : '...'}</div>
           </CardContent>
         </Card>
         <Card>
@@ -197,3 +202,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
