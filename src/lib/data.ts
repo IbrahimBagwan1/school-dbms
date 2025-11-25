@@ -5,10 +5,10 @@ const generateRandomNumber = (min: number, max: number) => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
-const generateGrades = (base: number) => {
+const generateGrades = (base: number, variation = 15) => {
   const grades = [];
   for (let i = 0; i < 4; i++) {
-    grades.push(Math.min(100, Math.max(0, base + generateRandomNumber(-15, 15))));
+    grades.push(Math.min(100, Math.max(0, base + generateRandomNumber(-variation, variation))));
   }
   return grades;
 };
@@ -20,23 +20,55 @@ const generateStudents = (): Student[] => {
   let studentIdCounter = 1;
   for (let standard = 1; standard <= 10; standard++) {
     const numberOfStudents = generateRandomNumber(55, 65); // Approx. 60 +/- 5
+    
+    // Create a shuffled array of performance tiers for the class
+    const tiers = [];
+    const numA = Math.floor(numberOfStudents * 0.6);
+    const numB = Math.floor(numberOfStudents * 0.3);
+    const numOther = numberOfStudents - numA - numB;
+
+    for (let i = 0; i < numA; i++) tiers.push('A');
+    for (let i = 0; i < numB; i++) tiers.push('B');
+    for (let i = 0; i < numOther; i++) tiers.push('Other');
+
+    // Shuffle the tiers
+    for (let i = tiers.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [tiers[i], tiers[j]] = [tiers[j], tiers[i]];
+    }
+
     for (let i = 0; i < numberOfStudents; i++) {
       const name = `${allNames[generateRandomNumber(0, allNames.length - 1)]} ${indianLastNames[generateRandomNumber(0, indianLastNames.length - 1)]}`;
       
       let baseGrade;
+      let gradeVariation = 5;
+
       if (standard < 4) {
         // More stable, higher grades for lower classes
         baseGrade = 90 - (standard * 2) + generateRandomNumber(-5, 5);
       } else {
-        // More variability and slightly lower average for higher classes
-        baseGrade = 85 - (standard * 3.5) + generateRandomNumber(-10, 10);
+        // Apply the new distribution for standards 4 to 10
+        const tier = tiers[i];
+        if (tier === 'A') {
+          // Target average: 90-100
+          baseGrade = 95;
+          gradeVariation = 5;
+        } else if (tier === 'B') {
+          // Target average: 80-89
+          baseGrade = 85;
+          gradeVariation = 4;
+        } else {
+          // Target average: below 80
+          baseGrade = 70;
+          gradeVariation = 15;
+        }
       }
       
       students.push({
         id: `S${String(studentIdCounter++).padStart(4, '0')}`,
         name: name,
         class: String(standard),
-        grades: generateGrades(baseGrade),
+        grades: generateGrades(baseGrade, gradeVariation),
         attendance: generateRandomNumber(70, 100),
         studyHours: generateRandomNumber(2, 20),
       });
