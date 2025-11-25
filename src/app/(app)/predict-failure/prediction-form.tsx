@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useFormState } from 'react-dom';
+import { useFormState, useFormStatus } from 'react-dom';
 import { runSinglePrediction, type SinglePredictionState } from './actions';
 import { useToast } from '@/hooks/use-toast';
-import { students } from '@/lib/data';
+import { students as staticStudents } from '@/lib/data';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -20,6 +20,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import type { Student } from '@/lib/types';
 
 
 const FormSchema = z.object({
@@ -39,11 +40,25 @@ const initialState: SinglePredictionState = {
   error: null,
 };
 
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" disabled={pending}>
+      {pending ? 'Analyzing...' : <> <Zap className="mr-2" /> Run Prediction</>}
+    </Button>
+  );
+}
+
 export function PredictionForm() {
   const { toast } = useToast();
   const [state, formAction] = useFormState(runSinglePrediction, initialState);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [students, setStudents] = useState<Student[]>([]);
+  const { pending } = useFormStatus();
   
+  useEffect(() => {
+    setStudents(staticStudents);
+  }, []);
+
   const form = useForm<FormValues>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -64,7 +79,6 @@ export function PredictionForm() {
         description: state.error,
       });
     }
-    setIsSubmitting(false);
   }, [state, toast]);
 
   const onStudentChange = (studentId: string) => {
@@ -83,16 +97,6 @@ export function PredictionForm() {
     }
   };
 
-  const onSubmit = (data: FormValues) => {
-    setIsSubmitting(true);
-    const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-      formData.append(key, value);
-    });
-    formAction(formData);
-  };
-
-
   return (
     <div className="grid gap-8 md:grid-cols-2">
       <Card>
@@ -103,7 +107,7 @@ export function PredictionForm() {
           </CardDescription>
         </CardHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form action={formAction}>
             <CardContent className="space-y-4">
               <FormField
                 control={form.control}
@@ -161,6 +165,7 @@ export function PredictionForm() {
                         </Command>
                       </PopoverContent>
                     </Popover>
+                    <input type="hidden" {...field} />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -168,13 +173,11 @@ export function PredictionForm() {
               <FormField control={form.control} name="grades" render={({ field }) => ( <FormItem><FormLabel>Historical Grades</FormLabel><FormControl><Input {...field} placeholder="e.g., 85, 92, 78, 88" /></FormControl><FormMessage /></FormItem> )} />
               <FormField control={form.control} name="attendanceRate" render={({ field }) => ( <FormItem><FormLabel>Attendance Rate (%)</FormLabel><FormControl><Input {...field} type="number" /></FormControl><FormMessage /></FormItem> )} />
               <FormField control={form.control} name="studyHoursPerWeek" render={({ field }) => ( <FormItem><FormLabel>Study Hours Per Week</FormLabel><FormControl><Input {...field} type="number" /></FormControl><FormMessage /></FormItem> )} />
-              <FormField control={form.control} name="testDifficulty" render={({ field }) => ( <FormItem><FormLabel>Upcoming Test Difficulty</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="easy">Easy</SelectItem><SelectItem value="medium">Medium</SelectItem><SelectItem value="hard">Hard</SelectItem></SelectContent></Select><FormMessage /></FormItem> )} />
+              <FormField control={form.control} name="testDifficulty" render={({ field }) => ( <FormItem><FormLabel>Upcoming Test Difficulty</FormLabel><Select onValueChange={field.onChange} value={field.value} name={field.name}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="easy">Easy</SelectItem><SelectItem value="medium">Medium</SelectItem><SelectItem value="hard">Hard</SelectItem></SelectContent></Select><FormMessage /></FormItem> )} />
               <FormField control={form.control} name="classAverageGrade" render={({ field }) => ( <FormItem><FormLabel>Class Average Grade</FormLabel><FormControl><Input {...field} type="number" /></FormControl><FormMessage /></FormItem> )} />
             </CardContent>
             <CardFooter>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Analyzing...' : <> <Zap className="mr-2" /> Run Prediction</>}
-              </Button>
+             <SubmitButton />
             </CardFooter>
           </form>
         </Form>
@@ -185,7 +188,7 @@ export function PredictionForm() {
           <CardDescription>The AI analysis for the student will appear here.</CardDescription>
         </CardHeader>
         <CardContent className="flex-grow">
-          {isSubmitting ? (
+          {pending ? (
              <div className="flex items-center justify-center h-full">
                 <div className="flex flex-col items-center gap-2">
                     <BrainCircuit className="w-10 h-10 animate-pulse text-primary" />

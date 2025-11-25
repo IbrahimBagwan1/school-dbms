@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -16,12 +16,21 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { teachers } from '@/lib/data';
+import { teachers as staticTeachers } from '@/lib/data';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
+import type { Teacher } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function TeachersPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setTeachers(staticTeachers);
+    setIsClient(true);
+  }, []);
 
   const filteredTeachers = useMemo(() => {
     if (!searchTerm) return teachers;
@@ -29,7 +38,7 @@ export default function TeachersPage() {
       teacher.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       teacher.subject.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [searchTerm]);
+  }, [searchTerm, teachers]);
 
   return (
     <Card>
@@ -50,6 +59,15 @@ export default function TeachersPage() {
         </div>
       </CardHeader>
       <CardContent>
+        {!isClient ? (
+             <div className="space-y-2">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+            </div>
+        ) : (
         <Table>
           <TableHeader>
             <TableRow>
@@ -76,6 +94,7 @@ export default function TeachersPage() {
              )}
           </TableBody>
         </Table>
+        )}
       </CardContent>
     </Card>
   );

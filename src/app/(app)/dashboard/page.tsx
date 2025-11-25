@@ -15,18 +15,23 @@ import {
   Line,
 } from 'recharts';
 import { Users, GraduationCap, BookOpen, Activity } from 'lucide-react';
-import { teachers, courses, students as staticStudents } from '@/lib/data';
+import { teachers as staticTeachers, courses as staticCourses, students as staticStudents } from '@/lib/data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { Student } from '@/lib/types';
+import type { Student, Teacher, Course } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function DashboardPage() {
   const [students, setStudents] = useState<Student[]>([]);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
   const [selectedClass, setSelectedClass] = useState('all');
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
     setStudents(staticStudents);
+    setTeachers(staticTeachers);
+    setCourses(staticCourses);
+    setIsClient(true);
   }, []);
 
   const generateClassAttendance = (base: number) => {
@@ -119,7 +124,11 @@ export default function DashboardPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{isClient ? totalStudents : '...'}</div>
+            {isClient ? (
+              <div className="text-2xl font-bold">{totalStudents}</div>
+            ) : (
+              <Skeleton className="h-8 w-1/4" />
+            )}
           </CardContent>
         </Card>
         <Card>
@@ -128,7 +137,11 @@ export default function DashboardPage() {
             <GraduationCap className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{teachers.length}</div>
+             {isClient ? (
+              <div className="text-2xl font-bold">{teachers.length}</div>
+            ) : (
+              <Skeleton className="h-8 w-1/4" />
+            )}
           </CardContent>
         </Card>
         <Card>
@@ -137,7 +150,11 @@ export default function DashboardPage() {
             <BookOpen className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{courses.length}</div>
+             {isClient ? (
+              <div className="text-2xl font-bold">{courses.length}</div>
+            ) : (
+              <Skeleton className="h-8 w-1/4" />
+            )}
           </CardContent>
         </Card>
         <Card>
@@ -146,7 +163,11 @@ export default function DashboardPage() {
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{isClient ? `${avgAttendance}%` : '...'}</div>
+            {isClient ? (
+              <div className="text-2xl font-bold">{`${avgAttendance}%`}</div>
+            ) : (
+              <Skeleton className="h-8 w-1/4" />
+            )}
           </CardContent>
         </Card>
 

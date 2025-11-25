@@ -25,6 +25,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import type { Student } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 function getGradeBadge(grades: number[]) {
@@ -91,22 +92,6 @@ export default function StudentsPage() {
     doc.save(`student-list-${selectedClass === 'all' ? 'all' : `std-${selectedClass}`}.pdf`);
   }
 
-  if (!isClient) {
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Students</CardTitle>
-                <CardDescription>
-                A list of all students in the school.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="h-24 flex items-center justify-center text-muted-foreground">Loading student data...</div>
-            </CardContent>
-        </Card>
-    )
-  }
-
   return (
     <Card>
       <CardHeader>
@@ -137,44 +122,54 @@ export default function StudentsPage() {
                     ))}
                 </SelectContent>
             </Select>
-            <Button onClick={downloadPdf} disabled={filteredStudents.length === 0}>
+            <Button onClick={downloadPdf} disabled={!isClient || filteredStudents.length === 0}>
                 <Download className="mr-2 h-4 w-4" /> Download PDF
             </Button>
         </div>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Class</TableHead>
-              <TableHead className="hidden md:table-cell">Student ID</TableHead>
-              <TableHead className="hidden md:table-cell">Avg. Grade</TableHead>
-              <TableHead className="hidden md:table-cell">Attendance</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredStudents.length > 0 ? (
-              filteredStudents.map((student) => (
-                <TableRow key={student.id}>
-                  <TableCell className="font-medium">{student.name}</TableCell>
-                  <TableCell>Standard {student.class}</TableCell>
-                  <TableCell className="hidden md:table-cell">{student.id}</TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {getGradeBadge(student.grades)}
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">{student.attendance}%</TableCell>
+        {!isClient ? (
+             <div className="space-y-2">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+            </div>
+        ) : (
+            <Table>
+            <TableHeader>
+                <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Class</TableHead>
+                <TableHead className="hidden md:table-cell">Student ID</TableHead>
+                <TableHead className="hidden md:table-cell">Avg. Grade</TableHead>
+                <TableHead className="hidden md:table-cell">Attendance</TableHead>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
-                  No students found.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+                {filteredStudents.length > 0 ? (
+                filteredStudents.map((student) => (
+                    <TableRow key={student.id}>
+                    <TableCell className="font-medium">{student.name}</TableCell>
+                    <TableCell>Standard {student.class}</TableCell>
+                    <TableCell className="hidden md:table-cell">{student.id}</TableCell>
+                    <TableCell className="hidden md:table-cell">
+                        {getGradeBadge(student.grades)}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">{student.attendance}%</TableCell>
+                    </TableRow>
+                ))
+                ) : (
+                <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center">
+                    No students found.
+                    </TableCell>
+                </TableRow>
+                )}
+            </TableBody>
+            </Table>
+        )}
       </CardContent>
     </Card>
   );

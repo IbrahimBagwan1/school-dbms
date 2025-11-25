@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useFormState } from 'react-dom';
+import { useFormState, useFormStatus } from 'react-dom';
 import { runClassPrediction, type ClassPredictionState } from './actions';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,10 +30,19 @@ const initialState: ClassPredictionState = {
   error: null,
 };
 
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" disabled={pending} className="w-full">
+      {pending ? 'Analyzing...' : <><Zap className="mr-2" /> Run Class Prediction</>}
+    </Button>
+  );
+}
+
 export function ClassPredictionForm() {
   const { toast } = useToast();
   const [state, formAction] = useFormState(runClassPrediction, initialState);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { pending } = useFormStatus();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(FormSchema),
@@ -51,22 +60,12 @@ export function ClassPredictionForm() {
         description: state.error,
       });
     }
-    setIsSubmitting(false);
   }, [state, toast]);
 
   const classOptions = useMemo(() => {
     return [...Array.from({ length: 10 }, (_, i) => String(i + 1))];
   }, []);
 
-  const onSubmit = (data: FormValues) => {
-    setIsSubmitting(true);
-    const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-      formData.append(key, value);
-    });
-    formAction(formData);
-  };
-  
   return (
     <div className="grid gap-8 lg:grid-cols-3">
       <Card className="lg:col-span-1">
@@ -77,7 +76,7 @@ export function ClassPredictionForm() {
           </CardDescription>
         </CardHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form action={formAction} className="space-y-6">
             <CardContent className="space-y-4">
               <FormField
                 control={form.control}
@@ -85,7 +84,7 @@ export function ClassPredictionForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Class</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value} name={field.name}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a class" />
@@ -109,7 +108,7 @@ export function ClassPredictionForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Upcoming Test Difficulty</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value} name={field.name}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue />
@@ -127,9 +126,7 @@ export function ClassPredictionForm() {
               />
             </CardContent>
             <CardFooter>
-              <Button type="submit" disabled={isSubmitting} className="w-full">
-                {isSubmitting ? 'Analyzing...' : <><Zap className="mr-2" /> Run Class Prediction</>}
-              </Button>
+              <SubmitButton />
             </CardFooter>
           </form>
         </Form>
@@ -140,7 +137,7 @@ export function ClassPredictionForm() {
           <CardDescription>A list of at-risk students will appear here, sorted by highest risk.</CardDescription>
         </CardHeader>
         <CardContent className="flex-grow">
-          {isSubmitting ? (
+          {pending ? (
             <div className="flex items-center justify-center h-full">
               <div className="flex flex-col items-center gap-2">
                 <BrainCircuit className="w-10 h-10 animate-pulse text-primary" />
