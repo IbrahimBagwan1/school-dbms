@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   BarChart,
@@ -20,6 +20,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 export default function DashboardPage() {
   const [selectedClass, setSelectedClass] = useState('all');
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const filteredStudents = useMemo(() => {
     if (selectedClass === 'all') {
@@ -50,12 +55,12 @@ export default function DashboardPage() {
   }, [filteredStudents]);
 
   const generateClassAttendance = (base: number) => {
-    if (selectedClass === 'all') return base;
+    if (selectedClass === 'all' || !isClient) return base;
     return Math.min(100, Math.max(70, base + (parseInt(selectedClass, 10) - 5) * 1.5 + (Math.random() - 0.5) * 5));
   };
-
+  
   const attendanceData = useMemo(() => {
-     // This is mock data as we don't have monthly attendance
+    // This is mock data as we don't have monthly attendance
     return [
       { month: 'Jan', attendance: generateClassAttendance(92) },
       { month: 'Feb', attendance: generateClassAttendance(90) },
@@ -64,12 +69,15 @@ export default function DashboardPage() {
       { month: 'May', attendance: generateClassAttendance(91) },
       { month: 'Jun', attendance: generateClassAttendance(89) },
     ];
-  }, [selectedClass]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedClass, isClient]);
 
   const totalStudents = filteredStudents.length;
-  const avgAttendance = totalStudents > 0
-    ? (filteredStudents.reduce((acc, s) => acc + s.attendance, 0) / totalStudents).toFixed(1)
-    : '0.0';
+  const avgAttendance = useMemo(() => {
+    if (!isClient || totalStudents === 0) return '0.0';
+    return (filteredStudents.reduce((acc, s) => acc + s.attendance, 0) / totalStudents).toFixed(1);
+  }, [filteredStudents, totalStudents, isClient]);
+
 
   const classOptions = ['all', ...Array.from({ length: 10 }, (_, i) => String(i + 1))];
 
