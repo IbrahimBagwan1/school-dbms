@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useActionState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { runClassPrediction, type ClassPredictionState } from './actions';
 import { useToast } from '@/hooks/use-toast';
@@ -14,12 +14,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 
-const initialState: ClassPredictionState = {
-  type: 'class',
-  data: null,
-  error: null,
-};
-
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
@@ -31,7 +25,7 @@ function SubmitButton() {
 
 export function ClassPredictionForm() {
   const { toast } = useToast();
-  const [state, formAction] = useActionState(runClassPrediction, initialState);
+  const [state, setState] = useState<ClassPredictionState>({ data: null, error: null });
 
   useEffect(() => {
     if (state.error) {
@@ -47,53 +41,55 @@ export function ClassPredictionForm() {
     return [...Array.from({ length: 10 }, (_, i) => String(i + 1))];
   }, []);
 
+  const formAction = async (formData: FormData) => {
+    const result = await runClassPrediction(formData);
+    setState(result);
+  };
+
   return (
     <div className="grid gap-8 lg:grid-cols-3">
       <Card className="lg:col-span-1">
-        <CardHeader>
-          <CardTitle>Class-wide Failure Risk</CardTitle>
-          <CardDescription>
-            Select a class to identify students at risk of failing.
-          </CardDescription>
-        </CardHeader>
-        <form
-            action={formAction}
-            className="space-y-6"
-          >
-        <CardContent className="space-y-4">
-            <div className="space-y-2">
-                <Label htmlFor="classId">Class</Label>
-                <Select name="classId" required defaultValue="1">
-                    <SelectTrigger id="classId">
-                        <SelectValue placeholder="Select a class" />
-                    </SelectTrigger>
-                    <SelectContent>
-                    {classOptions.map((classId) => (
-                        <SelectItem key={classId} value={classId}>
-                        Standard {classId}
-                        </SelectItem>
-                    ))}
-                    </SelectContent>
-                </Select>
-            </div>
+        <form action={formAction}>
+          <CardHeader>
+            <CardTitle>Class-wide Failure Risk</CardTitle>
+            <CardDescription>
+              Select a class to identify students at risk of failing.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+              <div className="space-y-2">
+                  <Label htmlFor="classId">Class</Label>
+                  <Select name="classId" required defaultValue="1">
+                      <SelectTrigger id="classId">
+                          <SelectValue placeholder="Select a class" />
+                      </SelectTrigger>
+                      <SelectContent>
+                      {classOptions.map((classId) => (
+                          <SelectItem key={classId} value={classId}>
+                          Standard {classId}
+                          </SelectItem>
+                      ))}
+                      </SelectContent>
+                  </Select>
+              </div>
 
-            <div className="space-y-2">
-                <Label htmlFor="testDifficulty">Upcoming Test Difficulty</Label>
-                <Select name="testDifficulty" defaultValue="medium" required>
-                    <SelectTrigger id="testDifficulty">
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="easy">Easy</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="hard">Hard</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
-        </CardContent>
-        <CardFooter>
-            <SubmitButton />
-        </CardFooter>
+              <div className="space-y-2">
+                  <Label htmlFor="testDifficulty">Upcoming Test Difficulty</Label>
+                  <Select name="testDifficulty" defaultValue="medium" required>
+                      <SelectTrigger id="testDifficulty">
+                          <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                          <SelectItem value="easy">Easy</SelectItem>
+                          <SelectItem value="medium">Medium</SelectItem>
+                          <SelectItem value="hard">Hard</SelectItem>
+                      </SelectContent>
+                  </Select>
+              </div>
+          </CardContent>
+          <CardFooter>
+              <SubmitButton />
+          </CardFooter>
         </form>
       </Card>
       <Card className="lg:col-span-2 flex flex-col">

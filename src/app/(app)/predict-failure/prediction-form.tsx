@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useActionState } from 'react';
+import { useEffect, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { runSinglePrediction, type SinglePredictionState } from './actions';
 import { useToast } from '@/hooks/use-toast';
@@ -20,12 +20,6 @@ import { cn } from '@/lib/utils';
 import type { Student } from '@/lib/types';
 
 
-const initialState: SinglePredictionState = {
-  type: 'single',
-  data: null,
-  error: null,
-};
-
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
@@ -37,7 +31,7 @@ function SubmitButton() {
 
 export function PredictionForm() {
   const { toast } = useToast();
-  const [state, formAction] = useActionState(runSinglePrediction, initialState);
+  const [state, setState] = useState<SinglePredictionState>({ data: null, error: null });
   const [students, setStudents] = useState<Student[]>([]);
   const [popoverOpen, setPopoverOpen] = useState(false);
 
@@ -79,6 +73,11 @@ export function PredictionForm() {
     }
     setPopoverOpen(false);
   };
+  
+  const formAction = async (formData: FormData) => {
+    const result = await runSinglePrediction(formData);
+    setState(result);
+  };
 
   return (
     <div className="grid gap-8 md:grid-cols-2">
@@ -89,9 +88,7 @@ export function PredictionForm() {
             Fill in the details for a single student to get an AI-powered prediction.
           </CardDescription>
         </CardHeader>
-        <form
-            action={formAction}
-          >
+        <form action={formAction}>
             <CardContent className="space-y-4">
               <div className="space-y-2 flex flex-col">
                 <Label>Student</Label>
