@@ -1,11 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useActionState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { runPrediction, PredictionState } from './actions';
+import { runPrediction, type PredictionState } from './actions';
 import { useToast } from '@/hooks/use-toast';
 import { students } from '@/lib/data';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,6 +34,8 @@ const initialState: PredictionState = {
 
 export function PredictionForm() {
   const { toast } = useToast();
+  const [state, setState] = useState<PredictionState>(initialState);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(FormSchema),
@@ -48,8 +49,6 @@ export function PredictionForm() {
     },
   });
 
-  const [state, formAction, isSubmitting] = useActionState(runPrediction, initialState);
-  
   useEffect(() => {
     if (state.error) {
       toast({
@@ -76,6 +75,19 @@ export function PredictionForm() {
     }
   };
 
+  const onSubmit = async (values: FormValues) => {
+    setIsSubmitting(true);
+    const formData = new FormData();
+    Object.entries(values).forEach(([key, value]) => {
+      formData.append(key, value);
+    });
+    
+    const result = await runPrediction(initialState, formData);
+    setState(result);
+    setIsSubmitting(false);
+  };
+
+
   return (
     <div className="grid gap-8 md:grid-cols-2">
       <Card>
@@ -86,7 +98,7 @@ export function PredictionForm() {
           </CardDescription>
         </CardHeader>
         <Form {...form}>
-          <form action={formAction} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <CardContent className="space-y-4">
               <FormField
                 control={form.control}
