@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useActionState } from 'react';
+import { useEffect, useState, useActionState, useTransition } from 'react';
 import { useFormStatus } from 'react-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -53,6 +53,7 @@ export function PredictionForm() {
   const { toast } = useToast();
   const [state, formAction] = useActionState(runSinglePrediction, initialState);
   const [students, setStudents] = useState<Student[]>([]);
+  const [popoverOpen, setPopoverOpen] = useState(false);
   
   useEffect(() => {
     setStudents(staticStudents);
@@ -94,6 +95,15 @@ export function PredictionForm() {
         : 75;
       form.setValue('classAverageGrade', classAvg.toFixed(0));
     }
+    setPopoverOpen(false); // Close popover on selection
+  };
+
+  const onFormSubmit = (data: FormValues) => {
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      formData.append(key, value);
+    });
+    formAction(formData);
   };
 
   return (
@@ -107,7 +117,7 @@ export function PredictionForm() {
         </CardHeader>
         <Form {...form}>
           <form
-            action={formAction}
+            onSubmit={form.handleSubmit(onFormSubmit)}
           >
             <CardContent className="space-y-4">
               <FormField
@@ -116,7 +126,7 @@ export function PredictionForm() {
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Student</FormLabel>
-                     <Popover>
+                     <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
@@ -142,7 +152,6 @@ export function PredictionForm() {
                           <CommandEmpty>No student found.</CommandEmpty>
                           <CommandGroup>
                             <ScrollArea className="h-72">
-                               <input type="hidden" name={field.name} value={field.value} />
                               {students.map((student) => (
                                 <CommandItem
                                   value={student.name}
