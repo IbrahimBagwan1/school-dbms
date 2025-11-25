@@ -98,8 +98,8 @@ export function PredictionForm() {
 
   const onFormSubmit = (data: FormValues) => {
     const formData = new FormData();
-    Object.keys(data).forEach(key => {
-        formData.append(key, (data as any)[key]);
+    Object.entries(data).forEach(([key, value]) => {
+        formData.append(key, value);
     });
     formAction(formData);
   };

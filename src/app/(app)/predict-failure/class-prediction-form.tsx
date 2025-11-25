@@ -146,7 +146,7 @@ export function ClassPredictionForm() {
           <CardDescription>A list of at-risk students will appear here, sorted by highest risk.</CardDescription>
         </CardHeader>
         <CardContent className="flex-grow">
-          {state.data && state.data.atRiskStudents.length > 0 ? (
+          {state.data && state.data.atRiskStudents && state.data.atRiskStudents.length > 0 ? (
              <ScrollArea className="h-full max-h-[60vh] pr-4">
                 <Table>
                     <TableHeader>
@@ -191,7 +191,7 @@ export function ClassPredictionForm() {
           ) : (
             <div className="flex items-center justify-center h-full">
               <div className="flex flex-col items-center gap-2 text-center">
-                {state.data && state.data.atRiskStudents.length === 0 ? (
+                {state.data && state.data.atRiskStudents && state.data.atRiskStudents.length === 0 ? (
                     <>
                         <CheckCircle className="w-10 h-10 text-green-600" />
                         <p className="text-muted-foreground">No students were identified as being at risk in this class.</p>
