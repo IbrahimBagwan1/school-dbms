@@ -96,14 +96,6 @@ export function PredictionForm() {
     }
   };
 
-  const onFormSubmit = (data: FormValues) => {
-    const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-        formData.append(key, String(value));
-    });
-    formAction(formData);
-  };
-
   return (
     <div className="grid gap-8 md:grid-cols-2">
       <Card>
@@ -115,7 +107,7 @@ export function PredictionForm() {
         </CardHeader>
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(onFormSubmit)}
+            action={formAction}
           >
             <CardContent className="space-y-4">
               <FormField
@@ -150,6 +142,7 @@ export function PredictionForm() {
                           <CommandEmpty>No student found.</CommandEmpty>
                           <CommandGroup>
                             <ScrollArea className="h-72">
+                              {/* Use an input with type="hidden" to ensure value is submitted with the form */}
                               <input type="hidden" {...form.register("studentId")} />
                               {students.map((student) => (
                                 <CommandItem

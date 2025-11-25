@@ -61,14 +61,6 @@ export function ClassPredictionForm() {
     }
   }, [state, toast]);
 
-  const onFormSubmit = (data: FormValues) => {
-    const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-        formData.append(key, value);
-    });
-    formAction(formData);
-  };
-
   const classOptions = useMemo(() => {
     return [...Array.from({ length: 10 }, (_, i) => String(i + 1))];
   }, []);
@@ -84,7 +76,7 @@ export function ClassPredictionForm() {
         </CardHeader>
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(onFormSubmit)}
+            action={formAction}
             className="space-y-6"
           >
             <CardContent className="space-y-4">
