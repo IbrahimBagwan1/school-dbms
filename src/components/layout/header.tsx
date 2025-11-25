@@ -12,16 +12,26 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { LogOut, User, UserCircle2 } from 'lucide-react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 export function AppHeader() {
   const pathname = usePathname();
+  const router = useRouter();
 
   const getPageTitle = (path: string) => {
     const segments = path.split('/').filter(Boolean);
     if (segments.length === 0) return 'Dashboard';
     const title = segments[segments.length-1];
     return title.charAt(0).toUpperCase() + title.slice(1).replace('-', ' ');
+  };
+
+  const handleLogout = () => {
+    try {
+        localStorage.removeItem('isAuthenticated');
+    } catch (e) {
+        // local storage not available
+    }
+    router.push('/login');
   };
 
   return (
@@ -49,7 +59,7 @@ export function AppHeader() {
             <span>Profile</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={handleLogout}>
             <LogOut className="mr-2" />
             <span>Log out</span>
           </DropdownMenuItem>

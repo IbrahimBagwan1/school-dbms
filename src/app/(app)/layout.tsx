@@ -1,3 +1,7 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/app-sidebar';
 import { AppHeader } from '@/components/layout/header';
@@ -7,6 +11,21 @@ export default function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+
+  useEffect(() => {
+    let isAuthenticated = false;
+    try {
+        isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+    } catch (e) {
+        // localStorage is not available
+    }
+    
+    if (!isAuthenticated) {
+      router.replace('/login');
+    }
+  }, [router]);
+
   return (
     <SidebarProvider>
       <AppSidebar />
