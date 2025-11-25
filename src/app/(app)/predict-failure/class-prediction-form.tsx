@@ -65,12 +65,6 @@ export function ClassPredictionForm() {
     return [...Array.from({ length: 10 }, (_, i) => String(i + 1))];
   }, []);
   
-  const onFormSubmit = (data: FormValues) => {
-    const formData = new FormData();
-    formData.append('classId', data.classId);
-    formData.append('testDifficulty', data.testDifficulty);
-    formAction(formData);
-  }
 
   return (
     <div className="grid gap-8 lg:grid-cols-3">
@@ -83,7 +77,7 @@ export function ClassPredictionForm() {
         </CardHeader>
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(onFormSubmit)}
+            action={formAction}
             className="space-y-6"
           >
             <CardContent className="space-y-4">
@@ -93,7 +87,7 @@ export function ClassPredictionForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Class</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value} name={field.name}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a class" />
@@ -117,7 +111,7 @@ export function ClassPredictionForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Upcoming Test Difficulty</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value} name={field.name}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue />
