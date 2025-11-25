@@ -1,11 +1,26 @@
 'use server';
 
-import { predictStudentFailure, PredictStudentFailureInput, PredictStudentFailureOutput } from '@/ai/flows/predict-student-failure';
+import {
+  predictStudentFailure,
+  PredictStudentFailureInput,
+  PredictStudentFailureOutput,
+} from '@/ai/flows/predict-student-failure';
 import { z } from 'zod';
 
 const FormSchema = z.object({
-  studentId: z.string(),
-  grades: z.string().transform(s => s.split(',').map(Number)),
+  studentId: z.string().min(1, 'Please select a student.'),
+  grades: z
+    .string()
+    .transform(s =>
+      s
+        .split(',')
+        .map(str => str.trim())
+        .filter(str => str !== '')
+        .map(Number)
+    )
+    .refine(arr => arr.every(num => !isNaN(num)), {
+      message: 'Grades must be a comma-separated list of numbers.',
+    }),
   attendanceRate: z.coerce.number().min(0).max(100).transform(n => n / 100),
   studyHoursPerWeek: z.coerce.number().min(0),
   testDifficulty: z.enum(['easy', 'medium', 'hard']),
@@ -31,6 +46,7 @@ export async function runPrediction(
   });
 
   if (!validatedFields.success) {
+    console.error(validatedFields.error.flatten().fieldErrors);
     return {
       data: null,
       error: 'Invalid form data. Please check your inputs.',
@@ -43,6 +59,9 @@ export async function runPrediction(
     return { data: result, error: null };
   } catch (error) {
     console.error(error);
-    return { data: null, error: 'Failed to run prediction. Please try again.' };
+    return {
+      data: null,
+      error: 'Failed to run prediction. Please try again.',
+    };
   }
 }
