@@ -2,12 +2,12 @@
 
 import {
   predictStudentFailure,
-  PredictStudentFailureInput,
-  PredictStudentFailureOutput,
+  type PredictStudentFailureInput,
+  type PredictStudentFailureOutput,
 } from '@/ai/flows/predict-student-failure';
 import { z } from 'zod';
 
-const FormSchema = z.object({
+const ActionSchema = z.object({
   studentId: z.string().min(1, 'Please select a student.'),
   grades: z
     .string()
@@ -17,10 +17,10 @@ const FormSchema = z.object({
         .map(str => str.trim())
         .filter(str => str !== '')
         .map(Number)
-        .filter(num => !isNaN(num))
+        .filter(num => !isNaN(num) && num >= 0 && num <= 100)
     )
     .refine(arr => arr.length > 0, {
-      message: 'Grades must be a comma-separated list of numbers.',
+      message: 'Grades must be a comma-separated list of valid numbers.',
     }),
   attendanceRate: z.coerce.number().min(0).max(100).transform(n => n / 100),
   studyHoursPerWeek: z.coerce.number().min(0),
@@ -46,13 +46,15 @@ export async function runPrediction(
     classAverageGrade: formData.get('classAverageGrade'),
   };
 
-  const validatedFields = FormSchema.safeParse(rawFormData);
+  const validatedFields = ActionSchema.safeParse(rawFormData);
 
   if (!validatedFields.success) {
-    console.error(validatedFields.error.flatten().fieldErrors);
+    const errorMessages = validatedFields.error.flatten().fieldErrors;
+    console.error(errorMessages);
+    const firstError = Object.values(errorMessages).flat()[0] || 'Invalid form data. Please check your inputs.';
     return {
       data: null,
-      error: 'Invalid form data. Please check your inputs.',
+      error: firstError,
     };
   }
 

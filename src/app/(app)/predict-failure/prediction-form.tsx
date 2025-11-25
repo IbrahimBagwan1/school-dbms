@@ -48,10 +48,8 @@ export function PredictionForm() {
     },
   });
 
-  const [state, formAction] = useActionState(runPrediction, initialState);
+  const [state, formAction, isSubmitting] = useActionState(runPrediction, initialState);
   
-  const isSubmitting = form.formState.isSubmitting;
-
   useEffect(() => {
     if (state.error) {
       toast({
@@ -69,10 +67,11 @@ export function PredictionForm() {
       form.setValue('grades', student.grades.join(', '));
       form.setValue('attendanceRate', String(student.attendance));
       form.setValue('studyHoursPerWeek', String(student.studyHours));
-      const classAvg = students
-        .filter(s => s.class === student.class)
-        .reduce((acc, s) => acc + (s.grades.reduce((a, b) => a + b, 0) / s.grades.length), 0) 
-        / students.filter(s => s.class === student.class).length;
+      const classStudents = students.filter(s => s.class === student.class);
+      const classAvg = classStudents.length > 0
+        ? classStudents.reduce((acc, s) => acc + (s.grades.reduce((a, b) => a + b, 0) / s.grades.length), 0) 
+          / classStudents.length
+        : 75;
       form.setValue('classAverageGrade', classAvg.toFixed(0));
     }
   };
@@ -95,7 +94,10 @@ export function PredictionForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Student</FormLabel>
-                    <Select onValueChange={onStudentChange} defaultValue={field.value}>
+                    <Select onValueChange={(value) => {
+                        field.onChange(value);
+                        onStudentChange(value);
+                      }} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a student" />
