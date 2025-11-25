@@ -31,7 +31,6 @@ export default function CoursesPage() {
               <TableHead>Course Name</TableHead>
               <TableHead>Teacher</TableHead>
               <TableHead className="hidden md:table-cell">Schedule</TableHead>
-              <TableHead>Enrolled</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -40,7 +39,6 @@ export default function CoursesPage() {
                 <TableCell className="font-medium">{course.name}</TableCell>
                 <TableCell>{course.teacher}</TableCell>
                 <TableCell className="hidden md:table-cell">{course.schedule}</TableCell>
-                <TableCell>{course.studentsEnrolled}</TableCell>
               </TableRow>
             ))}
           </TableBody>

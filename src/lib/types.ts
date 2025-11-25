@@ -19,5 +19,4 @@ export interface Course {
   name: string;
   teacher: string;
   schedule: string;
-  studentsEnrolled: number;
 }
