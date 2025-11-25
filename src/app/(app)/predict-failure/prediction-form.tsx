@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo, useActionState } from 'react';
+import { useEffect, useState, useActionState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -96,14 +96,6 @@ export function PredictionForm() {
     }
   };
 
-  const onFormSubmit = (data: FormValues) => {
-    const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-        formData.append(key, value);
-    });
-    formAction(formData);
-  };
-
   return (
     <div className="grid gap-8 md:grid-cols-2">
       <Card>
@@ -115,7 +107,7 @@ export function PredictionForm() {
         </CardHeader>
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(onFormSubmit)}
+            action={formAction}
           >
             <CardContent className="space-y-4">
               <FormField
