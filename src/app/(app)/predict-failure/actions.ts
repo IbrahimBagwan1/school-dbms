@@ -30,7 +30,7 @@ const SingleStudentActionSchema = z.object({
   grades: z.preprocess((val) => {
     if (typeof val !== 'string') return [];
     return val.split(',').map(s => s.trim()).filter(Boolean).map(Number).filter(n => !isNaN(n));
-  }, z.array(z.number())),
+  }, z.array(z.number()).min(1, 'Grades cannot be empty.')),
   attendanceRate: z.coerce.number().min(0).max(100),
   studyHoursPerWeek: z.coerce.number().min(0),
   testDifficulty: z.enum(['easy', 'medium', 'hard']),
@@ -80,7 +80,10 @@ export async function runClassPrediction(
   prevState: ClassPredictionState,
   formData: FormData
 ): Promise<ClassPredictionState> {
-  const rawFormData = Object.fromEntries(formData.entries());
+  const rawFormData = {
+    classId: formData.get('classId'),
+    testDifficulty: formData.get('testDifficulty'),
+  };
   const validatedFields = ClassActionSchema.safeParse(rawFormData);
 
   if (!validatedFields.success) {
@@ -100,11 +103,16 @@ export async function runClassPrediction(
       return { data: null, error: `No students found for class ${classId}.`, timestamp: Date.now() };
     }
 
-    const classAvg =
-      classStudents.reduce(
-        (acc, s) => acc + s.grades.reduce((a, b) => a + b, 0) / (s.grades.length || 1),
-        0
-      ) / classStudents.length;
+    const totalStudentsWithGrades = classStudents.filter(s => s.grades.length > 0).length;
+
+    // Safely calculate class average
+    const classAvg = totalStudentsWithGrades > 0
+      ? classStudents.reduce((acc, s) => {
+          if (s.grades.length === 0) return acc;
+          const studentAvg = s.grades.reduce((a, b) => a + b, 0) / s.grades.length;
+          return acc + studentAvg;
+        }, 0) / totalStudentsWithGrades
+      : 0;
 
     const predictionInput: PredictClassFailureInput = {
       classId,
@@ -125,7 +133,7 @@ export async function runClassPrediction(
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
     return {
       data: null,
-      error: `Failed to run prediction: ${errorMessage}`,
+      error: `Failed to run prediction for the class: ${errorMessage}`,
       timestamp: Date.now(),
     };
   }

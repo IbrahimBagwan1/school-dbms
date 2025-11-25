@@ -7,8 +7,9 @@ const generateRandomNumber = (min: number, max: number) => {
 
 const generateGrades = (base: number, variation = 15) => {
   const grades = [];
-  for (let i = 0; i < 4; i++) {
-    grades.push(Math.min(100, Math.max(0, base + generateRandomNumber(-variation, variation))));
+  const numGrades = generateRandomNumber(3, 5); // Ensure there are always grades
+  for (let i = 0; i < numGrades; i++) {
+    grades.push(Math.min(100, Math.max(40, base + generateRandomNumber(-variation, variation))));
   }
   return grades;
 };
@@ -19,9 +20,8 @@ const generateStudents = (): Student[] => {
   const students: Student[] = [];
   let studentIdCounter = 1;
   for (let standard = 1; standard <= 10; standard++) {
-    const numberOfStudents = generateRandomNumber(55, 65); // Approx. 60 +/- 5
+    const numberOfStudents = generateRandomNumber(55, 65);
     
-    // Create a shuffled array of performance tiers for the class
     const tiers = [];
     const numA = Math.floor(numberOfStudents * 0.6);
     const numB = Math.floor(numberOfStudents * 0.3);
@@ -31,7 +31,6 @@ const generateStudents = (): Student[] => {
     for (let i = 0; i < numB; i++) tiers.push('B');
     for (let i = 0; i < numOther; i++) tiers.push('Other');
 
-    // Shuffle the tiers
     for (let i = tiers.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [tiers[i], tiers[j]] = [tiers[j], tiers[i]];
@@ -44,21 +43,16 @@ const generateStudents = (): Student[] => {
       let gradeVariation = 5;
 
       if (standard < 4) {
-        // More stable, higher grades for lower classes
         baseGrade = 90 - (standard * 2) + generateRandomNumber(-5, 5);
       } else {
-        // Apply the new distribution for standards 4 to 10
         const tier = tiers[i];
         if (tier === 'A') {
-          // Target average: 90-100
           baseGrade = 95;
           gradeVariation = 5;
         } else if (tier === 'B') {
-          // Target average: 80-89
           baseGrade = 85;
           gradeVariation = 4;
         } else {
-          // Target average: below 80
           baseGrade = 70;
           gradeVariation = 15;
         }
