@@ -38,12 +38,12 @@ export async function runPrediction(
   formData: FormData
 ): Promise<PredictionState> {
   const rawFormData = {
-    studentId: formData.get('studentId'),
-    grades: formData.get('grades'),
-    attendanceRate: formData.get('attendanceRate'),
-    studyHoursPerWeek: formData.get('studyHoursPerWeek'),
-    testDifficulty: formData.get('testDifficulty'),
-    classAverageGrade: formData.get('classAverageGrade'),
+    studentId: formData.get('studentId') || '',
+    grades: formData.get('grades') || '',
+    attendanceRate: formData.get('attendanceRate') || '',
+    studyHoursPerWeek: formData.get('studyHoursPerWeek') || '',
+    testDifficulty: formData.get('testDifficulty') || '',
+    classAverageGrade: formData.get('classAverageGrade') || '',
   };
 
   const validatedFields = ActionSchema.safeParse(rawFormData);
@@ -64,9 +64,10 @@ export async function runPrediction(
     return { data: result, error: null };
   } catch (error) {
     console.error(error);
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
     return {
       data: null,
-      error: 'Failed to run prediction. Please try again.',
+      error: `Failed to run prediction: ${errorMessage}`,
     };
   }
 }
