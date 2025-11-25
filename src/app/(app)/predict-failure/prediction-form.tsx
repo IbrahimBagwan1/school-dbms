@@ -96,8 +96,6 @@ export function PredictionForm() {
     }
   };
 
-  const { pending } = useFormStatus();
-
   return (
     <div className="grid gap-8 md:grid-cols-2">
       <Card>
@@ -189,14 +187,7 @@ export function PredictionForm() {
           <CardDescription>The AI analysis for the student will appear here.</CardDescription>
         </CardHeader>
         <CardContent className="flex-grow">
-          {pending ? (
-             <div className="flex items-center justify-center h-full">
-                <div className="flex flex-col items-center gap-2">
-                    <BrainCircuit className="w-10 h-10 animate-pulse text-primary" />
-                    <p className="text-muted-foreground">Analyzing data...</p>
-                </div>
-            </div>
-          ) : state.data ? (
+          {state.data ? (
             <div className="space-y-6">
               <div>
                 <h3 className="font-semibold mb-2">Overall Assessment</h3>

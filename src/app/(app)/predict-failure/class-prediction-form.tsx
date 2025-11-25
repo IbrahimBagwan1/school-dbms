@@ -65,8 +65,6 @@ export function ClassPredictionForm() {
     return [...Array.from({ length: 10 }, (_, i) => String(i + 1))];
   }, []);
 
-  const { pending } = useFormStatus();
-
   return (
     <div className="grid gap-8 lg:grid-cols-3">
       <Card className="lg:col-span-1">
@@ -138,14 +136,7 @@ export function ClassPredictionForm() {
           <CardDescription>A list of at-risk students will appear here, sorted by highest risk.</CardDescription>
         </CardHeader>
         <CardContent className="flex-grow">
-          {pending ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="flex flex-col items-center gap-2">
-                <BrainCircuit className="w-10 h-10 animate-pulse text-primary" />
-                <p className="text-muted-foreground">Analyzing class data...</p>
-              </div>
-            </div>
-          ) : state.data && state.data.atRiskStudents.length > 0 ? (
+          {state.data && state.data.atRiskStudents.length > 0 ? (
              <ScrollArea className="h-full max-h-[60vh] pr-4">
                 <Table>
                     <TableHeader>
