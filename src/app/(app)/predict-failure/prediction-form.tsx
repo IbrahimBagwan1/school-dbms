@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useEffect, useState, useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -51,7 +51,7 @@ function SubmitButton() {
 
 export function PredictionForm() {
   const { toast } = useToast();
-  const [state, formAction] = useFormState(runSinglePrediction, initialState);
+  const [state, formAction] = useActionState(runSinglePrediction, initialState);
   const [students, setStudents] = useState<Student[]>([]);
   
   useEffect(() => {
