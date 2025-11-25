@@ -1,4 +1,4 @@
-import { PredictionForm } from './prediction-form';
+import { PredictionTabs } from './prediction-tabs';
 
 export const metadata = {
   title: 'Predict Student Failure | ScholarSight',
@@ -6,5 +6,5 @@ export const metadata = {
 };
 
 export default function PredictFailurePage() {
-  return <PredictionForm />;
+  return <PredictionTabs />;
 }

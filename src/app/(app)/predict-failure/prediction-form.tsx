@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { runPrediction, type PredictionState } from './actions';
+import { runSinglePrediction, type SinglePredictionState } from './actions';
 import { useToast } from '@/hooks/use-toast';
 import { students } from '@/lib/data';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,14 +27,15 @@ const FormSchema = z.object({
 
 type FormValues = z.infer<typeof FormSchema>;
 
-const initialState: PredictionState = {
+const initialState: SinglePredictionState = {
+  type: 'single',
   data: null,
   error: null,
 };
 
 export function PredictionForm() {
   const { toast } = useToast();
-  const [state, setState] = useState<PredictionState>(initialState);
+  const [state, setState] = useState<SinglePredictionState>(initialState);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<FormValues>({
@@ -56,6 +57,8 @@ export function PredictionForm() {
         title: 'Prediction Error',
         description: state.error,
       });
+      // Reset error to allow re-toasting
+      setState(s => ({ ...s, error: null }));
     }
   }, [state, toast]);
 
@@ -79,10 +82,10 @@ export function PredictionForm() {
     setIsSubmitting(true);
     const formData = new FormData();
     Object.entries(values).forEach(([key, value]) => {
-      formData.append(key, value);
+      formData.append(key, String(value));
     });
     
-    const result = await runPrediction(initialState, formData);
+    const result = await runSinglePrediction(formData);
     setState(result);
     setIsSubmitting(false);
   };
@@ -94,7 +97,7 @@ export function PredictionForm() {
         <CardHeader>
           <CardTitle>Predict Student Failure Risk</CardTitle>
           <CardDescription>
-            Fill in the details to get an AI-powered prediction.
+            Fill in the details for a single student to get an AI-powered prediction.
           </CardDescription>
         </CardHeader>
         <Form {...form}>
@@ -144,7 +147,7 @@ export function PredictionForm() {
       <Card className="flex flex-col">
         <CardHeader>
           <CardTitle>Prediction Result</CardTitle>
-          <CardDescription>The AI analysis will appear here.</CardDescription>
+          <CardDescription>The AI analysis for the student will appear here.</CardDescription>
         </CardHeader>
         <CardContent className="flex-grow">
           {isSubmitting ? (
