@@ -43,7 +43,7 @@ const initialState: SinglePredictionState = {
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={pending}>
+    <Button type="submit" disabled={pending} className="w-full">
       {pending ? 'Analyzing...' : <> <Zap className="mr-2" /> Run Prediction</>}
     </Button>
   );
@@ -96,6 +96,14 @@ export function PredictionForm() {
     }
   };
 
+  const onFormSubmit = (data: FormValues) => {
+    const formData = new FormData();
+    Object.keys(data).forEach(key => {
+        formData.append(key, (data as any)[key]);
+    });
+    formAction(formData);
+  };
+
   return (
     <div className="grid gap-8 md:grid-cols-2">
       <Card>
@@ -107,14 +115,7 @@ export function PredictionForm() {
         </CardHeader>
         <Form {...form}>
           <form
-            action={form.handleSubmit(() => {
-                const formData = new FormData();
-                const values = form.getValues();
-                Object.keys(values).forEach(key => {
-                    formData.append(key, (values as any)[key]);
-                });
-                formAction(formData);
-            })}
+            onSubmit={form.handleSubmit(onFormSubmit)}
           >
             <CardContent className="space-y-4">
               <FormField
@@ -173,7 +174,6 @@ export function PredictionForm() {
                         </Command>
                       </PopoverContent>
                     </Popover>
-                    <input type="hidden" {...form.register('studentId')} />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -181,7 +181,7 @@ export function PredictionForm() {
               <FormField control={form.control} name="grades" render={({ field }) => ( <FormItem><FormLabel>Historical Grades</FormLabel><FormControl><Input {...field} placeholder="e.g., 85, 92, 78, 88" /></FormControl><FormMessage /></FormItem> )} />
               <FormField control={form.control} name="attendanceRate" render={({ field }) => ( <FormItem><FormLabel>Attendance Rate (%)</FormLabel><FormControl><Input {...field} type="number" /></FormControl><FormMessage /></FormItem> )} />
               <FormField control={form.control} name="studyHoursPerWeek" render={({ field }) => ( <FormItem><FormLabel>Study Hours Per Week</FormLabel><FormControl><Input {...field} type="number" /></FormControl><FormMessage /></FormItem> )} />
-              <FormField control={form.control} name="testDifficulty" render={({ field }) => ( <FormItem><FormLabel>Upcoming Test Difficulty</FormLabel><Select onValueChange={field.onChange} value={field.value} name={field.name}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="easy">Easy</SelectItem><SelectItem value="medium">Medium</SelectItem><SelectItem value="hard">Hard</SelectItem></SelectContent></Select><FormMessage /></FormItem> )} />
+              <FormField control={form.control} name="testDifficulty" render={({ field }) => ( <FormItem><FormLabel>Upcoming Test Difficulty</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="easy">Easy</SelectItem><SelectItem value="medium">Medium</SelectItem><SelectItem value="hard">Hard</SelectItem></SelectContent></Select><FormMessage /></FormItem> )} />
               <FormField control={form.control} name="classAverageGrade" render={({ field }) => ( <FormItem><FormLabel>Class Average Grade</FormLabel><FormControl><Input {...field} type="number" /></FormControl><FormMessage /></FormItem> )} />
             </CardContent>
             <CardFooter>

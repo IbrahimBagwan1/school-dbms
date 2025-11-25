@@ -65,6 +65,13 @@ export function ClassPredictionForm() {
     return [...Array.from({ length: 10 }, (_, i) => String(i + 1))];
   }, []);
 
+  const onFormSubmit = (data: FormValues) => {
+    const formData = new FormData();
+    formData.append('classId', data.classId);
+    formData.append('testDifficulty', data.testDifficulty);
+    formAction(formData);
+  };
+
   return (
     <div className="grid gap-8 lg:grid-cols-3">
       <Card className="lg:col-span-1">
@@ -76,13 +83,7 @@ export function ClassPredictionForm() {
         </CardHeader>
         <Form {...form}>
           <form
-            action={form.handleSubmit(() => {
-                const formData = new FormData();
-                const values = form.getValues();
-                formData.append('classId', values.classId);
-                formData.append('testDifficulty', values.testDifficulty);
-                formAction(formData);
-            })}
+            onSubmit={form.handleSubmit(onFormSubmit)}
             className="space-y-6"
           >
             <CardContent className="space-y-4">
@@ -92,7 +93,7 @@ export function ClassPredictionForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Class</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value} name={field.name}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a class" />
@@ -116,7 +117,7 @@ export function ClassPredictionForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Upcoming Test Difficulty</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value} name={field.name}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue />
