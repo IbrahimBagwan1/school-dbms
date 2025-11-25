@@ -85,7 +85,7 @@ export function PredictionForm() {
       formData.append(key, String(value));
     });
     
-    const result = await runSinglePrediction(formData);
+    const result = await runSinglePrediction(undefined, formData);
     setState(result);
     setIsSubmitting(false);
   };
