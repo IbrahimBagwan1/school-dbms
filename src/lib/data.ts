@@ -19,12 +19,13 @@ const generateStudents = (): Student[] => {
   const students: Student[] = [];
   let studentIdCounter = 1;
   for (let standard = 1; standard <= 10; standard++) {
-    for (let i = 0; i < 30; i++) {
+    const numberOfStudents = generateRandomNumber(55, 65); // Approx. 60 +/- 5
+    for (let i = 0; i < numberOfStudents; i++) {
       const name = `${allNames[generateRandomNumber(0, allNames.length - 1)]} ${indianLastNames[generateRandomNumber(0, indianLastNames.length - 1)]}`;
       const baseGrade = 100 - (standard * 4) + generateRandomNumber(-5, 5);
       
       students.push({
-        id: `S${String(studentIdCounter++).padStart(3, '0')}`,
+        id: `S${String(studentIdCounter++).padStart(4, '0')}`,
         name: name,
         class: String(standard),
         grades: generateGrades(baseGrade),
