@@ -16,10 +16,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { students } from '@/lib/data';
 import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import { Download, Search } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import type { Student } from '@/lib/types';
+
 
 function getGradeBadge(grades: number[]) {
   const avg = grades.reduce((a, b) => a + b, 0) / grades.length;
@@ -30,17 +36,49 @@ function getGradeBadge(grades: number[]) {
   return <Badge variant="destructive">F</Badge>;
 }
 
+const getGradeAvg = (grades: number[]) => (grades.reduce((a, b) => a + b, 0) / grades.length).toFixed(1);
+
+
 export default function StudentsPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedClass, setSelectedClass] = useState('all');
 
   const filteredStudents = useMemo(() => {
-    if (!searchTerm) return students;
-    return students.filter(student =>
-      student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      `Standard ${student.class}`.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [searchTerm]);
+    return students.filter(student => {
+      const isClassMatch = selectedClass === 'all' || student.class === selectedClass;
+      const isSearchMatch =
+        !searchTerm ||
+        student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.id.toLowerCase().includes(searchTerm.toLowerCase());
+
+      return isClassMatch && isSearchMatch;
+    });
+  }, [searchTerm, selectedClass]);
+  
+  const classOptions = useMemo(() => {
+    return ['all', ...Array.from({ length: 10 }, (_, i) => String(i + 1))];
+  }, []);
+
+  const downloadPdf = () => {
+    const doc = new jsPDF();
+    const tableTitle = selectedClass === 'all' ? 'All Students' : `Students of Standard ${selectedClass}`;
+    
+    doc.text(tableTitle, 14, 15);
+
+    autoTable(doc, {
+      startY: 20,
+      head: [['ID', 'Name', 'Class', 'Avg. Grade', 'Attendance (%)']],
+      body: filteredStudents.map(student => [
+        student.id,
+        student.name,
+        student.class,
+        getGradeAvg(student.grades),
+        student.attendance
+      ]),
+    });
+
+    doc.save(`student-list-${selectedClass === 'all' ? 'all' : `std-${selectedClass}`}.pdf`);
+  }
 
   return (
     <Card>
@@ -49,15 +87,32 @@ export default function StudentsPage() {
         <CardDescription>
           A list of all students in the school.
         </CardDescription>
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Search students by name, ID, or class..."
-            className="w-full pl-8"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+        <div className="flex flex-col md:flex-row gap-4">
+            <div className="relative flex-1">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                    type="search"
+                    placeholder="Search students by name, ID..."
+                    className="w-full pl-8"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
+            <Select value={selectedClass} onValueChange={setSelectedClass}>
+                <SelectTrigger className="w-full md:w-[180px]">
+                    <SelectValue placeholder="Select Class" />
+                </SelectTrigger>
+                <SelectContent>
+                    {classOptions.map((option) => (
+                    <SelectItem key={option} value={option}>
+                        {option === 'all' ? 'All Classes' : `Standard ${option}`}
+                    </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+            <Button onClick={downloadPdf} disabled={filteredStudents.length === 0}>
+                <Download className="mr-2 h-4 w-4" /> Download PDF
+            </Button>
         </div>
       </CardHeader>
       <CardContent>
