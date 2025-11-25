@@ -13,5 +13,6 @@ export const indianGirlNames = [
 export const indianLastNames = [
   'Patel', 'Singh', 'Kumar', 'Shah', 'Mehta', 'Gupta', 'Sharma', 'Jain', 'Verma', 'Khan',
   'Reddy', 'Das', 'Malhotra', 'Kapoor', 'Yadav', 'Rao', 'Iyer', 'Menon', 'Nair',
-  'Chopra', 'Mishra', 'Pandey', 'Trivedi', 'Chatterjee', 'Banerjee', 'Mukherjee'
+  'Chopra', 'Mishra', 'Pandey', 'Trivedi', 'Chatterjee', 'Banerjee', 'Mukherjee',
+  'Pillai', 'Desai', 'Joshi', 'Bose', 'Aggarwal', 'Goel', 'Dubey'
 ];

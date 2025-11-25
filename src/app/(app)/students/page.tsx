@@ -1,3 +1,6 @@
+'use client';
+
+import { useState, useMemo } from 'react';
 import {
   Card,
   CardContent,
@@ -15,6 +18,8 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { students } from '@/lib/data';
+import { Input } from '@/components/ui/input';
+import { Search } from 'lucide-react';
 
 function getGradeBadge(grades: number[]) {
   const avg = grades.reduce((a, b) => a + b, 0) / grades.length;
@@ -26,6 +31,17 @@ function getGradeBadge(grades: number[]) {
 }
 
 export default function StudentsPage() {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredStudents = useMemo(() => {
+    if (!searchTerm) return students;
+    return students.filter(student =>
+      student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      student.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      `Standard ${student.class}`.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [searchTerm]);
+
   return (
     <Card>
       <CardHeader>
@@ -33,6 +49,16 @@ export default function StudentsPage() {
         <CardDescription>
           A list of all students in the school.
         </CardDescription>
+        <div className="relative">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="Search students by name, ID, or class..."
+            className="w-full pl-8"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
       </CardHeader>
       <CardContent>
         <Table>
@@ -46,18 +72,25 @@ export default function StudentsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {students.map((student) => {
-              return (
-              <TableRow key={student.id}>
-                <TableCell className="font-medium">{student.name}</TableCell>
-                <TableCell>Standard {student.class}</TableCell>
-                <TableCell className="hidden md:table-cell">{student.id}</TableCell>
-                <TableCell className="hidden md:table-cell">
-                  {getGradeBadge(student.grades)}
+            {filteredStudents.length > 0 ? (
+              filteredStudents.map((student) => (
+                <TableRow key={student.id}>
+                  <TableCell className="font-medium">{student.name}</TableCell>
+                  <TableCell>Standard {student.class}</TableCell>
+                  <TableCell className="hidden md:table-cell">{student.id}</TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    {getGradeBadge(student.grades)}
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">{student.attendance}%</TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={5} className="h-24 text-center">
+                  No students found.
                 </TableCell>
-                <TableCell className="hidden md:table-cell">{student.attendance}%</TableCell>
               </TableRow>
-            )})}
+            )}
           </TableBody>
         </Table>
       </CardContent>
