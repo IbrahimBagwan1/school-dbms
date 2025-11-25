@@ -17,12 +17,12 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 
 const FormSchema = z.object({
-  studentId: z.string({ required_error: 'Please select a student.' }),
-  grades: z.string(),
-  attendanceRate: z.string(),
-  studyHoursPerWeek: z.string(),
+  studentId: z.string().min(1, { message: 'Please select a student.' }),
+  grades: z.string().min(1, { message: 'Grades cannot be empty.' }),
+  attendanceRate: z.string().min(1, { message: 'Attendance rate cannot be empty.' }),
+  studyHoursPerWeek: z.string().min(1, { message: 'Study hours cannot be empty.' }),
   testDifficulty: z.enum(['easy', 'medium', 'hard']),
-  classAverageGrade: z.string(),
+  classAverageGrade: z.string().min(1, { message: 'Class average grade cannot be empty.' }),
 });
 
 type FormValues = z.infer<typeof FormSchema>;
@@ -62,12 +62,14 @@ export function PredictionForm() {
   const onStudentChange = (studentId: string) => {
     const student = students.find((s) => s.id === studentId);
     if (student) {
-      form.setValue('studentId', student.id);
+      form.setValue('studentId', student.id, { shouldValidate: true });
       form.setValue('grades', student.grades.join(', '));
       form.setValue('attendanceRate', String(student.attendance));
       form.setValue('studyHoursPerWeek', String(student.studyHours));
     }
   };
+  
+  const isSubmitting = form.formState.isSubmitting;
 
   return (
     <div className="grid gap-8 md:grid-cols-2">
@@ -112,9 +114,8 @@ export function PredictionForm() {
               <FormField control={form.control} name="classAverageGrade" render={({ field }) => ( <FormItem><FormLabel>Class Average Grade</FormLabel><FormControl><Input {...field} type="number" /></FormControl><FormMessage /></FormItem> )} />
             </CardContent>
             <CardFooter>
-              <Button type="submit" disabled={form.formState.isSubmitting}>
-                <Zap className="mr-2" />
-                Run Prediction
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Analyzing...' : <> <Zap className="mr-2" /> Run Prediction</>}
               </Button>
             </CardFooter>
           </form>
@@ -126,7 +127,7 @@ export function PredictionForm() {
           <CardDescription>The AI analysis will appear here.</CardDescription>
         </CardHeader>
         <CardContent className="flex-grow">
-          {form.formState.isSubmitting ? (
+          {isSubmitting ? (
              <div className="flex items-center justify-center h-full">
                 <div className="flex flex-col items-center gap-2">
                     <BrainCircuit className="w-10 h-10 animate-pulse text-primary" />

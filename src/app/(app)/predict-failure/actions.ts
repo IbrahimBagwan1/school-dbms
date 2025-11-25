@@ -17,8 +17,9 @@ const FormSchema = z.object({
         .map(str => str.trim())
         .filter(str => str !== '')
         .map(Number)
+        .filter(num => !isNaN(num))
     )
-    .refine(arr => arr.every(num => !isNaN(num)), {
+    .refine(arr => arr.length > 0, {
       message: 'Grades must be a comma-separated list of numbers.',
     }),
   attendanceRate: z.coerce.number().min(0).max(100).transform(n => n / 100),
@@ -36,14 +37,16 @@ export async function runPrediction(
   prevState: PredictionState,
   formData: FormData
 ): Promise<PredictionState> {
-  const validatedFields = FormSchema.safeParse({
+  const rawFormData = {
     studentId: formData.get('studentId'),
     grades: formData.get('grades'),
     attendanceRate: formData.get('attendanceRate'),
     studyHoursPerWeek: formData.get('studyHoursPerWeek'),
     testDifficulty: formData.get('testDifficulty'),
     classAverageGrade: formData.get('classAverageGrade'),
-  });
+  };
+
+  const validatedFields = FormSchema.safeParse(rawFormData);
 
   if (!validatedFields.success) {
     console.error(validatedFields.error.flatten().fieldErrors);
