@@ -12,9 +12,14 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertCircle, BrainCircuit, CheckCircle, Info, TrendingUp, Zap } from 'lucide-react';
+import { AlertCircle, BrainCircuit, Check, CheckCircle, ChevronsUpDown, Info, TrendingUp, Zap } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
+
 
 const FormSchema = z.object({
   studentId: z.string().min(1, { message: 'Please select a student.' }),
@@ -107,25 +112,58 @@ export function PredictionForm() {
                 control={form.control}
                 name="studentId"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="flex flex-col">
                     <FormLabel>Student</FormLabel>
-                    <Select onValueChange={(value) => {
-                        field.onChange(value);
-                        onStudentChange(value);
-                      }} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a student" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {students.map((student) => (
-                          <SelectItem key={student.id} value={student.id}>
-                            {student.name} (Std: {student.class}, ID: {student.id})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                     <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className={cn(
+                              "w-full justify-between",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value
+                              ? students.find(
+                                  (student) => student.id === field.value
+                                )?.name
+                              : "Select a student"}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                        <Command>
+                          <CommandInput placeholder="Search student..." />
+                          <CommandEmpty>No student found.</CommandEmpty>
+                          <CommandGroup>
+                            <ScrollArea className="h-72">
+                              {students.map((student) => (
+                                <CommandItem
+                                  value={student.name}
+                                  key={student.id}
+                                  onSelect={() => {
+                                    onStudentChange(student.id);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      student.id === field.value
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                  {student.name} (Std: {student.class}, ID: {student.id})
+                                </CommandItem>
+                              ))}
+                            </ScrollArea>
+                          </CommandGroup>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                     <FormMessage />
                   </FormItem>
                 )}
