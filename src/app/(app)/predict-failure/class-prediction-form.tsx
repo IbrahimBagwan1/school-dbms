@@ -114,7 +114,7 @@ export function ClassPredictionForm() {
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue />
-                        </Trigger>
+                        </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="easy">Easy</SelectItem>
