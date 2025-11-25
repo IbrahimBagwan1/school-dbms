@@ -61,11 +61,18 @@ export function ClassPredictionForm() {
     }
   }, [state, toast]);
 
+  const onFormSubmit = (data: FormValues) => {
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+        formData.append(key, value);
+    });
+    formAction(formData);
+  };
+
   const classOptions = useMemo(() => {
     return [...Array.from({ length: 10 }, (_, i) => String(i + 1))];
   }, []);
   
-
   return (
     <div className="grid gap-8 lg:grid-cols-3">
       <Card className="lg:col-span-1">
@@ -77,7 +84,7 @@ export function ClassPredictionForm() {
         </CardHeader>
         <Form {...form}>
           <form
-            action={formAction}
+            onSubmit={form.handleSubmit(onFormSubmit)}
             className="space-y-6"
           >
             <CardContent className="space-y-4">

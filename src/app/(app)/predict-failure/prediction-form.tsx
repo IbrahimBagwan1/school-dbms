@@ -96,6 +96,13 @@ export function PredictionForm() {
     }
   };
 
+  const onFormSubmit = (data: FormValues) => {
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+        formData.append(key, String(value));
+    });
+    formAction(formData);
+  };
 
   return (
     <div className="grid gap-8 md:grid-cols-2">
@@ -108,7 +115,7 @@ export function PredictionForm() {
         </CardHeader>
         <Form {...form}>
           <form
-            action={formAction}
+            onSubmit={form.handleSubmit(onFormSubmit)}
           >
             <CardContent className="space-y-4">
               <FormField
