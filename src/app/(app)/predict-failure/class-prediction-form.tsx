@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useMemo, useActionState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useFormStatus } from 'react-dom';
 import { runClassPrediction, type ClassPredictionState } from './actions';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -41,8 +41,7 @@ function SubmitButton() {
 
 export function ClassPredictionForm() {
   const { toast } = useToast();
-  const [state, formAction] = useFormState(runClassPrediction, initialState);
-  const { pending } = useFormStatus();
+  const [state, formAction] = useActionState(runClassPrediction, initialState);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(FormSchema),
@@ -65,6 +64,8 @@ export function ClassPredictionForm() {
   const classOptions = useMemo(() => {
     return [...Array.from({ length: 10 }, (_, i) => String(i + 1))];
   }, []);
+
+  const { pending } = useFormStatus();
 
   return (
     <div className="grid gap-8 lg:grid-cols-3">
@@ -112,7 +113,7 @@ export function ClassPredictionForm() {
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue />
-                        </SelectTrigger>
+                        </Trigger>
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="easy">Easy</SelectItem>

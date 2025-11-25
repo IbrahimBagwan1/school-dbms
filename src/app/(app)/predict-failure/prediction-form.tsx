@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useActionState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useFormStatus } from 'react-dom';
 import { runSinglePrediction, type SinglePredictionState } from './actions';
 import { useToast } from '@/hooks/use-toast';
 import { students as staticStudents } from '@/lib/data';
@@ -51,9 +51,8 @@ function SubmitButton() {
 
 export function PredictionForm() {
   const { toast } = useToast();
-  const [state, formAction] = useFormState(runSinglePrediction, initialState);
+  const [state, formAction] = useActionState(runSinglePrediction, initialState);
   const [students, setStudents] = useState<Student[]>([]);
-  const { pending } = useFormStatus();
   
   useEffect(() => {
     setStudents(staticStudents);
@@ -96,6 +95,8 @@ export function PredictionForm() {
       form.setValue('classAverageGrade', classAvg.toFixed(0));
     }
   };
+
+  const { pending } = useFormStatus();
 
   return (
     <div className="grid gap-8 md:grid-cols-2">
