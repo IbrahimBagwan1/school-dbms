@@ -66,7 +66,7 @@ export default function StudentsPage() {
                   </Avatar>
                 </TableCell>
                 <TableCell className="font-medium">{student.name}</TableCell>
-                <TableCell>{student.class}</TableCell>
+                <TableCell>Standard {student.class}</TableCell>
                 <TableCell className="hidden md:table-cell">{student.id}</TableCell>
                 <TableCell className="hidden md:table-cell">
                   {getGradeBadge(student.grades)}

@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useActionState } from 'react';
+import { useEffect } from 'react';
+import { useActionState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -48,6 +49,8 @@ export function PredictionForm() {
   });
 
   const [state, formAction] = useActionState(runPrediction, initialState);
+  
+  const isSubmitting = form.formState.isSubmitting;
 
   useEffect(() => {
     if (state.error) {
@@ -66,10 +69,13 @@ export function PredictionForm() {
       form.setValue('grades', student.grades.join(', '));
       form.setValue('attendanceRate', String(student.attendance));
       form.setValue('studyHoursPerWeek', String(student.studyHours));
+      const classAvg = students
+        .filter(s => s.class === student.class)
+        .reduce((acc, s) => acc + (s.grades.reduce((a, b) => a + b, 0) / s.grades.length), 0) 
+        / students.filter(s => s.class === student.class).length;
+      form.setValue('classAverageGrade', classAvg.toFixed(0));
     }
   };
-  
-  const isSubmitting = form.formState.isSubmitting;
 
   return (
     <div className="grid gap-8 md:grid-cols-2">
@@ -98,7 +104,7 @@ export function PredictionForm() {
                       <SelectContent>
                         {students.map((student) => (
                           <SelectItem key={student.id} value={student.id}>
-                            {student.name} ({student.id})
+                            {student.name} (Std: {student.class}, ID: {student.id})
                           </SelectItem>
                         ))}
                       </SelectContent>

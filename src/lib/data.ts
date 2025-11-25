@@ -1,24 +1,62 @@
 import type { Student, Teacher, Course } from './types';
+import { indianBoyNames, indianGirlNames, indianLastNames } from './data-indian';
 
-export const students: Student[] = [
-  { id: 'S001', name: 'Alice Johnson', class: '10A', avatar: 'student-1', grades: [85, 92, 78, 88], attendance: 95, studyHours: 15 },
-  { id: 'S002', name: 'Bob Williams', class: '10B', avatar: 'student-2', grades: [72, 65, 70, 75], attendance: 80, studyHours: 8 },
-  { id: 'S003', name: 'Charlie Brown', class: '11A', avatar: 'student-3', grades: [95, 98, 97, 96], attendance: 98, studyHours: 20 },
-  { id: 'S004', name: 'Diana Miller', class: '11B', avatar: 'student-4', grades: [60, 55, 62, 58], attendance: 75, studyHours: 5 },
-  { id: 'S005', name: 'Ethan Davis', class: '12A', avatar: 'student-5', grades: [88, 82, 90, 85], attendance: 92, studyHours: 12 },
-  { id: 'S006', name: 'Fiona Garcia', class: '12B', avatar: 'student-6', grades: [78, 80, 75, 82], attendance: 88, studyHours: 10 },
-];
+const generateRandomNumber = (min: number, max: number) => {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+
+const generateGrades = (base: number) => {
+  const grades = [];
+  for (let i = 0; i < 4; i++) {
+    grades.push(Math.min(100, Math.max(0, base + generateRandomNumber(-10, 10))));
+  }
+  return grades;
+};
+
+const allNames = [...indianBoyNames, ...indianGirlNames];
+
+const generateStudents = (): Student[] => {
+  const students: Student[] = [];
+  let studentIdCounter = 1;
+  for (let standard = 1; standard <= 10; standard++) {
+    for (let i = 0; i < 30; i++) {
+      const name = `${allNames[generateRandomNumber(0, allNames.length - 1)]} ${indianLastNames[generateRandomNumber(0, indianLastNames.length - 1)]}`;
+      const baseGrade = 100 - (standard * 4) + generateRandomNumber(-5, 5);
+      
+      students.push({
+        id: `S${String(studentIdCounter++).padStart(3, '0')}`,
+        name: name,
+        class: String(standard),
+        avatar: `student-${generateRandomNumber(1, 6)}`,
+        grades: generateGrades(baseGrade),
+        attendance: generateRandomNumber(70, 100),
+        studyHours: generateRandomNumber(2, 20),
+      });
+    }
+  }
+  return students;
+};
+
+export const students: Student[] = generateStudents();
 
 export const teachers: Teacher[] = [
-  { id: 'T01', name: 'Mr. Smith', subject: 'Mathematics', avatar: 'teacher-1', contact: 'msmith@example.com' },
-  { id: 'T02', name: 'Ms. Jones', subject: 'Physics', avatar: 'teacher-2', contact: 'ajones@example.com' },
-  { id: 'T03', name: 'Dr. Rodriguez', subject: 'Chemistry', avatar: 'teacher-3', contact: 'mrodriguez@example.com' },
-  { id: 'T04', name: 'Mrs. Wilson', subject: 'English', avatar: 'teacher-4', contact: 'swilson@example.com' },
+  { id: 'T01', name: 'Mr. Anil Kumar', subject: 'Mathematics', avatar: 'teacher-1', contact: 'akumar@example.com' },
+  { id: 'T02', name: 'Ms. Sunita Sharma', subject: 'Physics', avatar: 'teacher-2', contact: 'ssharma@example.com' },
+  { id: 'T03', name: 'Dr. Rajesh Singh', subject: 'Chemistry', avatar: 'teacher-3', contact: 'rsingh@example.com' },
+  { id: 'T04', name: 'Mrs. Priya Patel', subject: 'English', avatar: 'teacher-4', contact: 'ppatel@example.com' },
+  { id: 'T05', name: 'Mr. Vikram Rao', subject: 'History', avatar: 'teacher-1', contact: 'vrao@example.com' },
+  { id: 'T06', name: 'Ms. Deepa Iyer', subject: 'Biology', avatar: 'teacher-2', contact: 'diyer@example.com' },
+  { id: 'T07', name: 'Mr. Sanjay Mehta', subject: 'Computer Science', avatar: 'teacher-3', contact: 'smehta@example.com' },
+  { id: 'T08', name: 'Mrs. Aarti Gupta', subject: 'Hindi', avatar: 'teacher-4', contact: 'agupta@example.com' },
 ];
 
 export const courses: Course[] = [
-  { id: 'C101', name: 'Algebra II', teacher: 'Mr. Smith', schedule: 'Mon, Wed, Fri 10:00 AM', studentsEnrolled: 30 },
-  { id: 'C102', name: 'Mechanics', teacher: 'Ms. Jones', schedule: 'Tue, Thu 1:00 PM', studentsEnrolled: 25 },
-  { id: 'C103', name: 'Organic Chemistry', teacher: 'Dr. Rodriguez', schedule: 'Mon, Wed 2:00 PM', studentsEnrolled: 28 },
-  { id: 'C104', name: 'World Literature', teacher: 'Mrs. Wilson', schedule: 'Tue, Thu 9:00 AM', studentsEnrolled: 32 },
+  { id: 'C101', name: 'Algebra II', teacher: 'Mr. Anil Kumar', schedule: 'Mon, Wed, Fri 10:00 AM', studentsEnrolled: 30 },
+  { id: 'C102', name: 'Mechanics', teacher: 'Ms. Sunita Sharma', schedule: 'Tue, Thu 1:00 PM', studentsEnrolled: 25 },
+  { id: 'C103', name: 'Organic Chemistry', teacher: 'Dr. Rajesh Singh', schedule: 'Mon, Wed 2:00 PM', studentsEnrolled: 28 },
+  { id: 'C104', name: 'World Literature', teacher: 'Mrs. Priya Patel', schedule: 'Tue, Thu 9:00 AM', studentsEnrolled: 32 },
+  { id: 'C105', name: 'Indian History', teacher: 'Mr. Vikram Rao', schedule: 'Mon, Wed, Fri 11:00 AM', studentsEnrolled: 40 },
+  { id: 'C106', name: 'Botany', teacher: 'Ms. Deepa Iyer', schedule: 'Tue, Thu 10:30 AM', studentsEnrolled: 22 },
+  { id: 'C107', name: 'Data Structures', teacher: 'Mr. Sanjay Mehta', schedule: 'Mon, Wed 3:00 PM', studentsEnrolled: 35 },
+  { id: 'C108', name: 'Hindi Literature', teacher: 'Mrs. Aarti Gupta', schedule: 'Tue, Thu 11:30 AM', studentsEnrolled: 29 },
 ];
