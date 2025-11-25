@@ -142,7 +142,7 @@ export function PredictionForm() {
                           <CommandEmpty>No student found.</CommandEmpty>
                           <CommandGroup>
                             <ScrollArea className="h-72">
-                               <input type="hidden" {...field} />
+                               <input type="hidden" name={field.name} value={field.value} />
                               {students.map((student) => (
                                 <CommandItem
                                   value={student.name}
