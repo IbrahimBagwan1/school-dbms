@@ -96,6 +96,14 @@ export function PredictionForm() {
     }
   };
 
+  const onFormSubmit = (data: FormValues) => {
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      formData.append(key, value);
+    });
+    formAction(formData);
+  };
+
   return (
     <div className="grid gap-8 md:grid-cols-2">
       <Card>
@@ -107,7 +115,7 @@ export function PredictionForm() {
         </CardHeader>
         <Form {...form}>
           <form
-            action={formAction}
+            onSubmit={form.handleSubmit(onFormSubmit)}
           >
             <CardContent className="space-y-4">
               <FormField
@@ -136,7 +144,6 @@ export function PredictionForm() {
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
-                       <input type="hidden" {...field} />
                       <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
                         <Command>
                           <CommandInput placeholder="Search student..." />
@@ -174,7 +181,7 @@ export function PredictionForm() {
               <FormField control={form.control} name="grades" render={({ field }) => ( <FormItem><FormLabel>Historical Grades</FormLabel><FormControl><Input {...field} placeholder="e.g., 85, 92, 78, 88" /></FormControl><FormMessage /></FormItem> )} />
               <FormField control={form.control} name="attendanceRate" render={({ field }) => ( <FormItem><FormLabel>Attendance Rate (%)</FormLabel><FormControl><Input {...field} type="number" /></FormControl><FormMessage /></FormItem> )} />
               <FormField control={form.control} name="studyHoursPerWeek" render={({ field }) => ( <FormItem><FormLabel>Study Hours Per Week</FormLabel><FormControl><Input {...field} type="number" /></FormControl><FormMessage /></FormItem> )} />
-              <FormField control={form.control} name="testDifficulty" render={({ field }) => ( <FormItem><FormLabel>Upcoming Test Difficulty</FormLabel><Select onValueChange={field.onChange} value={field.value} name={field.name}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="easy">Easy</SelectItem><SelectItem value="medium">Medium</SelectItem><SelectItem value="hard">Hard</SelectItem></SelectContent></Select><FormMessage /></FormItem> )} />
+              <FormField control={form.control} name="testDifficulty" render={({ field }) => ( <FormItem><FormLabel>Upcoming Test Difficulty</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="easy">Easy</SelectItem><SelectItem value="medium">Medium</SelectItem><SelectItem value="hard">Hard</SelectItem></SelectContent></Select><FormMessage /></FormItem> )} />
               <FormField control={form.control} name="classAverageGrade" render={({ field }) => ( <FormItem><FormLabel>Class Average Grade</FormLabel><FormControl><Input {...field} type="number" /></FormControl><FormMessage /></FormItem> )} />
             </CardContent>
             <CardFooter>
