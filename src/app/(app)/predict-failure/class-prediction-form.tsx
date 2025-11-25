@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useMemo, useActionState } from 'react';
+import { useEffect, useMemo } from 'react';
+import { useFormState, useFormStatus } from 'react-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useFormStatus } from 'react-dom';
 import { runClassPrediction, type ClassPredictionState } from './actions';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -41,7 +41,7 @@ function SubmitButton() {
 
 export function ClassPredictionForm() {
   const { toast } = useToast();
-  const [state, formAction] = useActionState(runClassPrediction, initialState);
+  const [state, formAction] = useFormState(runClassPrediction, initialState);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(FormSchema),
@@ -86,7 +86,7 @@ export function ClassPredictionForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Class</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value} name={field.name}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a class" />
@@ -110,7 +110,7 @@ export function ClassPredictionForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Upcoming Test Difficulty</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value} name={field.name}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue />
