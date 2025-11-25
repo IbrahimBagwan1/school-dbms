@@ -42,59 +42,64 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarMenu className="flex-1 p-2">
         <SidebarMenuItem>
-          <Link href="/dashboard" legacyBehavior passHref>
-            <SidebarMenuButton
-              isActive={isActive('/dashboard')}
-              tooltip="Dashboard"
-            >
+          <SidebarMenuButton
+            asChild
+            isActive={isActive('/dashboard')}
+            tooltip="Dashboard"
+          >
+            <Link href="/dashboard">
               <LayoutDashboard />
               Dashboard
-            </SidebarMenuButton>
-          </Link>
+            </Link>
+          </SidebarMenuButton>
         </SidebarMenuItem>
         <SidebarMenuItem>
-          <Link href="/students" legacyBehavior passHref>
-            <SidebarMenuButton
-              isActive={isActive('/students')}
-              tooltip="Students"
-            >
+          <SidebarMenuButton
+            asChild
+            isActive={isActive('/students')}
+            tooltip="Students"
+          >
+            <Link href="/students">
               <Users />
               Students
-            </SidebarMenuButton>
-          </Link>
+            </Link>
+          </SidebarMenuButton>
         </SidebarMenuItem>
         <SidebarMenuItem>
-          <Link href="/teachers" legacyBehavior passHref>
-            <SidebarMenuButton
-              isActive={isActive('/teachers')}
-              tooltip="Teachers"
-            >
+          <SidebarMenuButton
+            asChild
+            isActive={isActive('/teachers')}
+            tooltip="Teachers"
+          >
+            <Link href="/teachers">
               <GraduationCap />
               Teachers
-            </SidebarMenuButton>
-          </Link>
+            </Link>
+          </SidebarMenuButton>
         </SidebarMenuItem>
         <SidebarMenuItem>
-          <Link href="/courses" legacyBehavior passHref>
-            <SidebarMenuButton
-              isActive={isActive('/courses')}
-              tooltip="Courses"
-            >
+          <SidebarMenuButton
+            asChild
+            isActive={isActive('/courses')}
+            tooltip="Courses"
+          >
+            <Link href="/courses">
               <BookOpen />
               Courses
-            </SidebarMenuButton>
-          </Link>
+            </Link>
+          </SidebarMenuButton>
         </SidebarMenuItem>
         <SidebarMenuItem>
-          <Link href="/predict-failure" legacyBehavior passHref>
-            <SidebarMenuButton
-              isActive={isActive('/predict-failure')}
-              tooltip="Predict Failure"
-            >
+          <SidebarMenuButton
+            asChild
+            isActive={isActive('/predict-failure')}
+            tooltip="Predict Failure"
+          >
+            <Link href="/predict-failure">
               <BrainCircuit />
               Predict Failure
-            </SidebarMenuButton>
-          </Link>
+            </Link>
+          </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>
     </Sidebar>
