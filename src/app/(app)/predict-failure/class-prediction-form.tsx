@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { runClassPrediction, type ClassPredictionState } from './actions';
 import { useToast } from '@/hooks/use-toast';
@@ -25,10 +25,11 @@ function SubmitButton() {
 
 export function ClassPredictionForm() {
   const { toast } = useToast();
-  const [state, setState] = useState<ClassPredictionState>({ data: null, error: null });
+  const initialState: ClassPredictionState = { data: null, error: null, timestamp: 0 };
+  const [state, formAction] = useActionState(runClassPrediction, initialState);
 
   useEffect(() => {
-    if (state.error) {
+    if (state.error && state.timestamp > 0) { // Check timestamp to avoid firing on initial render
       toast({
         variant: 'destructive',
         title: 'Prediction Error',
@@ -40,11 +41,6 @@ export function ClassPredictionForm() {
   const classOptions = useMemo(() => {
     return [...Array.from({ length: 10 }, (_, i) => String(i + 1))];
   }, []);
-
-  const formAction = async (formData: FormData) => {
-    const result = await runClassPrediction(formData);
-    setState(result);
-  };
 
   return (
     <div className="grid gap-8 lg:grid-cols-3">
@@ -59,7 +55,7 @@ export function ClassPredictionForm() {
           <CardContent className="space-y-4">
               <div className="space-y-2">
                   <Label htmlFor="classId">Class</Label>
-                  <Select name="classId" required defaultValue="1">
+                  <Select name="classId" required defaultValue="10">
                       <SelectTrigger id="classId">
                           <SelectValue placeholder="Select a class" />
                       </SelectTrigger>
@@ -75,7 +71,7 @@ export function ClassPredictionForm() {
 
               <div className="space-y-2">
                   <Label htmlFor="testDifficulty">Upcoming Test Difficulty</Label>
-                  <Select name="testDifficulty" defaultValue="medium" required>
+                  <Select name="testDifficulty" defaultValue="hard" required>
                       <SelectTrigger id="testDifficulty">
                           <SelectValue />
                       </SelectTrigger>
@@ -143,7 +139,7 @@ export function ClassPredictionForm() {
           ) : (
             <div className="flex items-center justify-center h-full">
               <div className="flex flex-col items-center gap-2 text-center">
-                {state.data && state.data.atRiskStudents && state.data.atRiskStudents.length === 0 ? (
+                {state.data && state.data.atRiskStudents?.length === 0 ? (
                     <>
                         <CheckCircle className="w-10 h-10 text-green-600" />
                         <p className="text-muted-foreground">No students were identified as being at risk in this class.</p>

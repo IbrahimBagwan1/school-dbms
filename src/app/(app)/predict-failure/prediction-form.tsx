@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { runSinglePrediction, type SinglePredictionState } from './actions';
 import { useToast } from '@/hooks/use-toast';
@@ -31,24 +31,30 @@ function SubmitButton() {
 
 export function PredictionForm() {
   const { toast } = useToast();
-  const [state, setState] = useState<SinglePredictionState>({ data: null, error: null });
   const [students, setStudents] = useState<Student[]>([]);
   const [popoverOpen, setPopoverOpen] = useState(false);
 
-  // Form state
+  // Form field state
   const [studentId, setStudentId] = useState('');
   const [grades, setGrades] = useState('');
   const [attendanceRate, setAttendanceRate] = useState('');
   const [studyHoursPerWeek, setStudyHoursPerWeek] = useState('');
-  const [testDifficulty, setTestDifficulty] = useState('medium');
-  const [classAverageGrade, setClassAverageGrade] = useState('75');
-  
+  const [classAverageGrade, setClassAverageGrade] = useState('');
+
+  const initialState: SinglePredictionState = { data: null, error: null, timestamp: 0 };
+  const [state, formAction] = useActionState(runSinglePrediction, initialState);
+
   useEffect(() => {
     setStudents(staticStudents);
+    // Find a student in class 10 with a low grade to pre-fill
+    const atRiskStudent = staticStudents.find(s => s.class === '10' && (s.grades.reduce((a,b)=>a+b,0)/s.grades.length) < 70);
+    if(atRiskStudent) {
+      onStudentChange(atRiskStudent.id);
+    }
   }, []);
 
   useEffect(() => {
-    if (state.error) {
+    if (state.error && state.timestamp > 0) { // Check timestamp to avoid firing on initial render
       toast({
         variant: 'destructive',
         title: 'Prediction Error',
@@ -73,22 +79,17 @@ export function PredictionForm() {
     }
     setPopoverOpen(false);
   };
-  
-  const formAction = async (formData: FormData) => {
-    const result = await runSinglePrediction(formData);
-    setState(result);
-  };
 
   return (
     <div className="grid gap-8 md:grid-cols-2">
       <Card>
-        <CardHeader>
-          <CardTitle>Predict Student Failure Risk</CardTitle>
-          <CardDescription>
-            Fill in the details for a single student to get an AI-powered prediction.
-          </CardDescription>
-        </CardHeader>
         <form action={formAction}>
+            <CardHeader>
+              <CardTitle>Predict Student Failure Risk</CardTitle>
+              <CardDescription>
+                Fill in the details for a single student to get an AI-powered prediction.
+              </CardDescription>
+            </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2 flex flex-col">
                 <Label>Student</Label>
@@ -103,9 +104,7 @@ export function PredictionForm() {
                       )}
                     >
                       {studentId
-                        ? students.find(
-                            (student) => student.id === studentId
-                          )?.name
+                        ? students.find((student) => student.id === studentId)?.name
                         : "Select a student"}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
@@ -125,9 +124,7 @@ export function PredictionForm() {
                               <Check
                                 className={cn(
                                   "mr-2 h-4 w-4",
-                                  student.id === studentId
-                                    ? "opacity-100"
-                                    : "opacity-0"
+                                  student.id === studentId ? "opacity-100" : "opacity-0"
                                 )}
                               />
                               {student.name} (Std: {student.class}, ID: {student.id})
@@ -154,7 +151,7 @@ export function PredictionForm() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="testDifficulty">Upcoming Test Difficulty</Label>
-                <Select name="testDifficulty" value={testDifficulty} onValueChange={setTestDifficulty} required>
+                <Select name="testDifficulty" defaultValue="medium" required>
                     <SelectTrigger id="testDifficulty"><SelectValue /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="easy">Easy</SelectItem>

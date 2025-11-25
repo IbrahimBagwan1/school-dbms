@@ -13,98 +13,82 @@ import {
 import { students } from '@/lib/data';
 import { z } from 'zod';
 
-const SingleStudentActionSchema = z.object({
-  studentId: z.string().min(1, 'Student ID is missing.'),
-  grades: z.array(z.number()),
-  attendanceRate: z.number().min(0).max(1),
-  studyHoursPerWeek: z.number().min(0),
-  testDifficulty: z.enum(['easy', 'medium', 'hard']),
-  classAverageGrade: z.number().min(0).max(100),
-});
-
-const ClassActionSchema = z.object({
-  classId: z.string().min(1, 'Class ID is missing.'),
-  testDifficulty: z.enum(['easy', 'medium', 'hard']),
-});
-
 export type SinglePredictionState = {
   data: PredictStudentFailureOutput | null;
   error: string | null;
+  timestamp: number;
 };
 
 export type ClassPredictionState = {
   data: PredictClassFailureOutput | null;
   error: string | null;
+  timestamp: number;
 };
 
-function parseGrades(gradesStr: string | null): number[] {
-  if (!gradesStr) return [];
-  return gradesStr
-    .split(',')
-    .map((str) => str.trim())
-    .filter((str) => str !== '')
-    .map(Number)
-    .filter((num) => !isNaN(num) && num >= 0 && num <= 100);
-}
+const SingleStudentActionSchema = z.object({
+  studentId: z.string().min(1, 'Please select a student.'),
+  grades: z.preprocess((val) => {
+    if (typeof val !== 'string') return [];
+    return val.split(',').map(s => s.trim()).filter(Boolean).map(Number).filter(n => !isNaN(n));
+  }, z.array(z.number())),
+  attendanceRate: z.coerce.number().min(0).max(100),
+  studyHoursPerWeek: z.coerce.number().min(0),
+  testDifficulty: z.enum(['easy', 'medium', 'hard']),
+  classAverageGrade: z.coerce.number().min(0).max(100),
+});
+
+const ClassActionSchema = z.object({
+  classId: z.string().min(1, 'Please select a class.'),
+  testDifficulty: z.enum(['easy', 'medium', 'hard']),
+});
 
 export async function runSinglePrediction(
+  prevState: SinglePredictionState,
   formData: FormData
 ): Promise<SinglePredictionState> {
-  const rawFormData = {
-    studentId: formData.get('studentId'),
-    grades: parseGrades(formData.get('grades') as string | null),
-    attendanceRate: Number(formData.get('attendanceRate') || 0) / 100,
-    studyHoursPerWeek: Number(formData.get('studyHoursPerWeek') || 0),
-    testDifficulty: formData.get('testDifficulty'),
-    classAverageGrade: Number(formData.get('classAverageGrade') || 0),
-  };
-
+  const rawFormData = Object.fromEntries(formData.entries());
   const validatedFields = SingleStudentActionSchema.safeParse(rawFormData);
 
   if (!validatedFields.success) {
-    const errorMessages = validatedFields.error.flatten().fieldErrors;
-    const firstError =
-      Object.values(errorMessages).flat()[0] ||
-      'Invalid form data. Please check your inputs.';
+    const firstError = Object.values(validatedFields.error.flatten().fieldErrors).flat()[0];
     return {
       data: null,
-      error: firstError,
+      error: firstError || 'Invalid form data. Please check your inputs.',
+      timestamp: Date.now(),
     };
   }
-
+  
   try {
-    const predictionInput: PredictStudentFailureInput = validatedFields.data;
+    const { attendanceRate, ...rest } = validatedFields.data;
+    const predictionInput: PredictStudentFailureInput = {
+      ...rest,
+      attendanceRate: attendanceRate / 100, // Convert percentage to 0-1 range
+    };
     const result = await predictStudentFailure(predictionInput);
-    return { data: result, error: null };
+    return { data: result, error: null, timestamp: Date.now() };
   } catch (error) {
-    console.error(error);
-    const errorMessage =
-      error instanceof Error ? error.message : 'An unknown error occurred.';
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
     return {
       data: null,
       error: `Failed to run prediction: ${errorMessage}`,
+      timestamp: Date.now(),
     };
   }
 }
 
 export async function runClassPrediction(
+  prevState: ClassPredictionState,
   formData: FormData
 ): Promise<ClassPredictionState> {
-  const rawFormData = {
-    classId: formData.get('classId'),
-    testDifficulty: formData.get('testDifficulty'),
-  };
-
+  const rawFormData = Object.fromEntries(formData.entries());
   const validatedFields = ClassActionSchema.safeParse(rawFormData);
 
   if (!validatedFields.success) {
-    const errorMessages = validatedFields.error.flatten().fieldErrors;
-    const firstError =
-      Object.values(errorMessages).flat()[0] ||
-      'Invalid form data. Please check your inputs.';
+     const firstError = Object.values(validatedFields.error.flatten().fieldErrors).flat()[0];
     return {
       data: null,
-      error: firstError,
+      error: firstError || 'Invalid form data. Please check your inputs.',
+      timestamp: Date.now(),
     };
   }
 
@@ -113,21 +97,14 @@ export async function runClassPrediction(
 
     const classStudents = students.filter((s) => s.class === classId);
     if (classStudents.length === 0) {
-      return {
-        data: null,
-        error: `No students found for class ${classId}.`,
-      };
+      return { data: null, error: `No students found for class ${classId}.`, timestamp: Date.now() };
     }
 
     const classAvg =
-      classStudents.length > 0
-        ? classStudents.reduce(
-            (acc, s) =>
-              acc +
-              s.grades.reduce((a, b) => a + b, 0) / (s.grades.length || 1),
-            0
-          ) / classStudents.length
-        : 75;
+      classStudents.reduce(
+        (acc, s) => acc + s.grades.reduce((a, b) => a + b, 0) / (s.grades.length || 1),
+        0
+      ) / classStudents.length;
 
     const predictionInput: PredictClassFailureInput = {
       classId,
@@ -143,14 +120,13 @@ export async function runClassPrediction(
     };
 
     const result = await predictClassFailure(predictionInput);
-    return { data: result, error: null };
+    return { data: result, error: null, timestamp: Date.now() };
   } catch (error) {
-    console.error(error);
-    const errorMessage =
-      error instanceof Error ? error.message : 'An unknown error occurred.';
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
     return {
       data: null,
       error: `Failed to run prediction: ${errorMessage}`,
+      timestamp: Date.now(),
     };
   }
 }
