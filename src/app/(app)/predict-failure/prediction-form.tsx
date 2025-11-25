@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useFormState, useForm } from 'react-hook-form';
+import { useFormState } from 'react-dom';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { runPrediction, PredictionState } from './actions';
@@ -34,8 +35,7 @@ const initialState: PredictionState = {
 
 export function PredictionForm() {
   const { toast } = useToast();
-  const [state, formAction] = useFormState(runPrediction, initialState);
-
+  
   const form = useForm<FormValues>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -47,6 +47,8 @@ export function PredictionForm() {
       classAverageGrade: '75',
     },
   });
+
+  const [state, formAction] = useFormState(runPrediction, initialState);
 
   useEffect(() => {
     if (state.error) {
