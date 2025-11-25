@@ -2,17 +2,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useActionState } from 'react';
+import { useActionState, useTransition } from 'react';
 import { useFormStatus } from 'react-dom';
 import { runSinglePrediction, type SinglePredictionState } from './actions';
 import { useToast } from '@/hooks/use-toast';
 import { students as staticStudents } from '@/lib/data';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertCircle, BrainCircuit, Check, CheckCircle, ChevronsUpDown, Info, TrendingUp, Zap } from 'lucide-react';
@@ -24,17 +21,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import type { Student } from '@/lib/types';
 
-
-const FormSchema = z.object({
-  studentId: z.string().min(1, { message: 'Please select a student.' }),
-  grades: z.string().min(1, { message: 'Grades cannot be empty.' }),
-  attendanceRate: z.string().min(1, { message: 'Attendance rate cannot be empty.' }),
-  studyHoursPerWeek: z.string().min(1, { message: 'Study hours cannot be empty.' }),
-  testDifficulty: z.enum(['easy', 'medium', 'hard']),
-  classAverageGrade: z.string().min(1, { message: 'Class average grade cannot be empty.' }),
-});
-
-type FormValues = z.infer<typeof FormSchema>;
 
 const initialState: SinglePredictionState = {
   type: 'single',
@@ -56,22 +42,18 @@ export function PredictionForm() {
   const [state, formAction] = useActionState(runSinglePrediction, initialState);
   const [students, setStudents] = useState<Student[]>([]);
   const [popoverOpen, setPopoverOpen] = useState(false);
+
+  // Form state
+  const [studentId, setStudentId] = useState('');
+  const [grades, setGrades] = useState('');
+  const [attendanceRate, setAttendanceRate] = useState('');
+  const [studyHoursPerWeek, setStudyHoursPerWeek] = useState('');
+  const [testDifficulty, setTestDifficulty] = useState('medium');
+  const [classAverageGrade, setClassAverageGrade] = useState('75');
   
   useEffect(() => {
     setStudents(staticStudents);
   }, []);
-
-  const form = useForm<FormValues>({
-    resolver: zodResolver(FormSchema),
-    defaultValues: {
-      studentId: '',
-      grades: '',
-      attendanceRate: '',
-      studyHoursPerWeek: '',
-      testDifficulty: 'medium',
-      classAverageGrade: '75',
-    },
-  });
 
   useEffect(() => {
     if (state.error) {
@@ -83,19 +65,19 @@ export function PredictionForm() {
     }
   }, [state, toast]);
 
-  const onStudentChange = (studentId: string) => {
-    const student = students.find((s) => s.id === studentId);
+  const onStudentChange = (selectedStudentId: string) => {
+    const student = students.find((s) => s.id === selectedStudentId);
     if (student) {
-      form.setValue('studentId', student.id, { shouldValidate: true });
-      form.setValue('grades', student.grades.join(', '));
-      form.setValue('attendanceRate', String(student.attendance));
-      form.setValue('studyHoursPerWeek', String(student.studyHours));
+      setStudentId(student.id);
+      setGrades(student.grades.join(', '));
+      setAttendanceRate(String(student.attendance));
+      setStudyHoursPerWeek(String(student.studyHours));
       const classStudents = students.filter(s => s.class === student.class);
       const classAvg = classStudents.length > 0
         ? classStudents.reduce((acc, s) => acc + (s.grades.reduce((a, b) => a + b, 0) / s.grades.length), 0) 
           / classStudents.length
         : 75;
-      form.setValue('classAverageGrade', classAvg.toFixed(0));
+      setClassAverageGrade(classAvg.toFixed(0));
     }
     setPopoverOpen(false);
   };
@@ -109,83 +91,92 @@ export function PredictionForm() {
             Fill in the details for a single student to get an AI-powered prediction.
           </CardDescription>
         </CardHeader>
-        <Form {...form}>
-          <form
+        <form
             action={formAction}
           >
             <CardContent className="space-y-4">
-              <FormField
-                control={form.control}
-                name="studentId"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Student</FormLabel>
-                     <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                            className={cn(
-                              "w-full justify-between",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value
-                              ? students.find(
-                                  (student) => student.id === field.value
-                                )?.name
-                              : "Select a student"}
-                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                        <Command>
-                          <CommandInput placeholder="Search student..." />
-                          <CommandEmpty>No student found.</CommandEmpty>
-                          <CommandGroup>
-                            <ScrollArea className="h-72">
-                              {students.map((student) => (
-                                <CommandItem
-                                  value={student.name}
-                                  key={student.id}
-                                  onSelect={() => {
-                                    onStudentChange(student.id);
-                                  }}
-                                >
-                                  <Check
-                                    className={cn(
-                                      "mr-2 h-4 w-4",
-                                      student.id === field.value
-                                        ? "opacity-100"
-                                        : "opacity-0"
-                                    )}
-                                  />
-                                  {student.name} (Std: {student.class}, ID: {student.id})
-                                </CommandItem>
-                              ))}
-                            </ScrollArea>
-                          </CommandGroup>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                    <input type="hidden" {...field} name={field.name} />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField control={form.control} name="grades" render={({ field }) => ( <FormItem><FormLabel>Historical Grades</FormLabel><FormControl><Input {...field} placeholder="e.g., 85, 92, 78, 88" /></FormControl><FormMessage /></FormItem> )} />
-              <FormField control={form.control} name="attendanceRate" render={({ field }) => ( <FormItem><FormLabel>Attendance Rate (%)</FormLabel><FormControl><Input {...field} type="number" /></FormControl><FormMessage /></FormItem> )} />
-              <FormField control={form.control} name="studyHoursPerWeek" render={({ field }) => ( <FormItem><FormLabel>Study Hours Per Week</FormLabel><FormControl><Input {...field} type="number" /></FormControl><FormMessage /></FormItem> )} />
-              <FormField control={form.control} name="testDifficulty" render={({ field }) => ( <FormItem><FormLabel>Upcoming Test Difficulty</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value} name={field.name}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="easy">Easy</SelectItem><SelectItem value="medium">Medium</SelectItem><SelectItem value="hard">Hard</SelectItem></SelectContent></Select><FormMessage /></FormItem> )} />
-              <FormField control={form.control} name="classAverageGrade" render={({ field }) => ( <FormItem><FormLabel>Class Average Grade</FormLabel><FormControl><Input {...field} type="number" /></FormControl><FormMessage /></FormItem> )} />
+              <div className="space-y-2 flex flex-col">
+                <Label>Student</Label>
+                 <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      className={cn(
+                        "w-full justify-between",
+                        !studentId && "text-muted-foreground"
+                      )}
+                    >
+                      {studentId
+                        ? students.find(
+                            (student) => student.id === studentId
+                          )?.name
+                        : "Select a student"}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                    <Command>
+                      <CommandInput placeholder="Search student..." />
+                      <CommandEmpty>No student found.</CommandEmpty>
+                      <CommandGroup>
+                        <ScrollArea className="h-72">
+                          {students.map((student) => (
+                            <CommandItem
+                              value={student.name}
+                              key={student.id}
+                              onSelect={() => onStudentChange(student.id)}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  student.id === studentId
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                )}
+                              />
+                              {student.name} (Std: {student.class}, ID: {student.id})
+                            </CommandItem>
+                          ))}
+                        </ScrollArea>
+                      </CommandGroup>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+                <input type="hidden" name="studentId" value={studentId} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="grades">Historical Grades</Label>
+                <Input id="grades" name="grades" value={grades} onChange={(e) => setGrades(e.target.value)} placeholder="e.g., 85, 92, 78, 88" required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="attendanceRate">Attendance Rate (%)</Label>
+                <Input id="attendanceRate" name="attendanceRate" value={attendanceRate} onChange={(e) => setAttendanceRate(e.target.value)} type="number" required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="studyHoursPerWeek">Study Hours Per Week</Label>
+                <Input id="studyHoursPerWeek" name="studyHoursPerWeek" value={studyHoursPerWeek} onChange={(e) => setStudyHoursPerWeek(e.target.value)} type="number" required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="testDifficulty">Upcoming Test Difficulty</Label>
+                <Select name="testDifficulty" value={testDifficulty} onValueChange={setTestDifficulty} required>
+                    <SelectTrigger id="testDifficulty"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="easy">Easy</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="hard">Hard</SelectItem>
+                    </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="classAverageGrade">Class Average Grade</Label>
+                <Input id="classAverageGrade" name="classAverageGrade" value={classAverageGrade} onChange={(e) => setClassAverageGrade(e.target.value)} type="number" required />
+              </div>
             </CardContent>
             <CardFooter>
              <SubmitButton />
             </CardFooter>
           </form>
-        </Form>
       </Card>
       <Card className="flex flex-col">
         <CardHeader>

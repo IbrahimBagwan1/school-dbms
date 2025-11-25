@@ -2,29 +2,19 @@
 'use client';
 
 import { useEffect, useMemo } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { runClassPrediction, type ClassPredictionState } from './actions';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BrainCircuit, CheckCircle, Info, TrendingUp, Zap } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-
-const FormSchema = z.object({
-  classId: z.string().min(1, { message: 'Please select a class.' }),
-  testDifficulty: z.enum(['easy', 'medium', 'hard']),
-});
-
-type FormValues = z.infer<typeof FormSchema>;
 
 const initialState: ClassPredictionState = {
   type: 'class',
@@ -44,14 +34,6 @@ function SubmitButton() {
 export function ClassPredictionForm() {
   const { toast } = useToast();
   const [state, formAction] = useActionState(runClassPrediction, initialState);
-
-  const form = useForm<FormValues>({
-    resolver: zodResolver(FormSchema),
-    defaultValues: {
-      classId: '',
-      testDifficulty: 'medium',
-    },
-  });
 
   useEffect(() => {
     if (state.error) {
@@ -76,64 +58,45 @@ export function ClassPredictionForm() {
             Select a class to identify students at risk of failing.
           </CardDescription>
         </CardHeader>
-        <Form {...form}>
-          <form
+        <form
             action={formAction}
             className="space-y-6"
           >
-            <CardContent className="space-y-4">
-              <FormField
-                control={form.control}
-                name="classId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Class</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value} name={field.name}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a class" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {classOptions.map((classId) => (
-                          <SelectItem key={classId} value={classId}>
-                            Standard {classId}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="testDifficulty"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Upcoming Test Difficulty</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value} name={field.name}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </Trigger>
-                      </FormControl>
-                      <SelectContent>
+        <CardContent className="space-y-4">
+            <div className="space-y-2">
+                <Label htmlFor="classId">Class</Label>
+                <Select name="classId" required>
+                    <SelectTrigger id="classId">
+                        <SelectValue placeholder="Select a class" />
+                    </SelectTrigger>
+                    <SelectContent>
+                    {classOptions.map((classId) => (
+                        <SelectItem key={classId} value={classId}>
+                        Standard {classId}
+                        </SelectItem>
+                    ))}
+                    </SelectContent>
+                </Select>
+            </div>
+
+            <div className="space-y-2">
+                <Label htmlFor="testDifficulty">Upcoming Test Difficulty</Label>
+                <Select name="testDifficulty" defaultValue="medium" required>
+                    <SelectTrigger id="testDifficulty">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
                         <SelectItem value="easy">Easy</SelectItem>
                         <SelectItem value="medium">Medium</SelectItem>
                         <SelectItem value="hard">Hard</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </CardContent>
-            <CardFooter>
-              <SubmitButton />
-            </CardFooter>
-          </form>
-        </Form>
+                    </SelectContent>
+                </Select>
+            </div>
+        </CardContent>
+        <CardFooter>
+            <SubmitButton />
+        </CardFooter>
+        </form>
       </Card>
       <Card className="lg:col-span-2 flex flex-col">
         <CardHeader>
