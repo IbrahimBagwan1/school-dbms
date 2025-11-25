@@ -8,7 +8,7 @@ const generateRandomNumber = (min: number, max: number) => {
 const generateGrades = (base: number) => {
   const grades = [];
   for (let i = 0; i < 4; i++) {
-    grades.push(Math.min(100, Math.max(0, base + generateRandomNumber(-10, 10))));
+    grades.push(Math.min(100, Math.max(0, base + generateRandomNumber(-15, 15))));
   }
   return grades;
 };
@@ -22,7 +22,15 @@ const generateStudents = (): Student[] => {
     const numberOfStudents = generateRandomNumber(55, 65); // Approx. 60 +/- 5
     for (let i = 0; i < numberOfStudents; i++) {
       const name = `${allNames[generateRandomNumber(0, allNames.length - 1)]} ${indianLastNames[generateRandomNumber(0, indianLastNames.length - 1)]}`;
-      const baseGrade = 100 - (standard * 4) + generateRandomNumber(-5, 5);
+      
+      let baseGrade;
+      if (standard < 4) {
+        // More stable, higher grades for lower classes
+        baseGrade = 90 - (standard * 2) + generateRandomNumber(-5, 5);
+      } else {
+        // More variability and slightly lower average for higher classes
+        baseGrade = 85 - (standard * 3.5) + generateRandomNumber(-10, 10);
+      }
       
       students.push({
         id: `S${String(studentIdCounter++).padStart(4, '0')}`,
