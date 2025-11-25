@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { students } from '@/lib/data';
+import { students as staticStudents } from '@/lib/data';
 import { Input } from '@/components/ui/input';
 import { Download, Search } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -28,6 +28,7 @@ import type { Student } from '@/lib/types';
 
 
 function getGradeBadge(grades: number[]) {
+  if (grades.length === 0) return <Badge variant="secondary">N/A</Badge>;
   const avg = grades.reduce((a, b) => a + b, 0) / grades.length;
   if (avg >= 90) return <Badge variant="default" className="bg-green-600">A</Badge>;
   if (avg >= 80) return <Badge variant="default" className="bg-blue-500">B</Badge>;
@@ -36,12 +37,22 @@ function getGradeBadge(grades: number[]) {
   return <Badge variant="destructive">F</Badge>;
 }
 
-const getGradeAvg = (grades: number[]) => (grades.reduce((a, b) => a + b, 0) / grades.length).toFixed(1);
+const getGradeAvg = (grades: number[]) => {
+  if (grades.length === 0) return 'N/A';
+  return (grades.reduce((a, b) => a + b, 0) / grades.length).toFixed(1)
+};
 
 
 export default function StudentsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedClass, setSelectedClass] = useState('all');
+  const [students, setStudents] = useState<Student[]>([]);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setStudents(staticStudents);
+    setIsClient(true);
+  }, []);
 
   const filteredStudents = useMemo(() => {
     return students.filter(student => {
@@ -53,7 +64,7 @@ export default function StudentsPage() {
 
       return isClassMatch && isSearchMatch;
     });
-  }, [searchTerm, selectedClass]);
+  }, [searchTerm, selectedClass, students]);
   
   const classOptions = useMemo(() => {
     return ['all', ...Array.from({ length: 10 }, (_, i) => String(i + 1))];
@@ -78,6 +89,22 @@ export default function StudentsPage() {
     });
 
     doc.save(`student-list-${selectedClass === 'all' ? 'all' : `std-${selectedClass}`}.pdf`);
+  }
+
+  if (!isClient) {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Students</CardTitle>
+                <CardDescription>
+                A list of all students in the school.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="h-24 flex items-center justify-center text-muted-foreground">Loading student data...</div>
+            </CardContent>
+        </Card>
+    )
   }
 
   return (
