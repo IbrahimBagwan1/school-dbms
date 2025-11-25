@@ -64,7 +64,7 @@ export function ClassPredictionForm() {
   const classOptions = useMemo(() => {
     return [...Array.from({ length: 10 }, (_, i) => String(i + 1))];
   }, []);
-
+  
   const onFormSubmit = (data: FormValues) => {
     const formData = new FormData();
     formData.append('classId', data.classId);
