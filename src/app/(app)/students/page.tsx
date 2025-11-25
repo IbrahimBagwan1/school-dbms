@@ -13,14 +13,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { students } from '@/lib/data';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
-
-function getStudentAvatar(id: string) {
-    return PlaceHolderImages.find((img) => img.id === id);
-}
 
 function getGradeBadge(grades: number[]) {
   const avg = grades.reduce((a, b) => a + b, 0) / grades.length;
@@ -44,9 +38,6 @@ export default function StudentsPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="hidden w-[100px] sm:table-cell">
-                <span className="sr-only">Avatar</span>
-              </TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Class</TableHead>
               <TableHead className="hidden md:table-cell">Student ID</TableHead>
@@ -56,15 +47,8 @@ export default function StudentsPage() {
           </TableHeader>
           <TableBody>
             {students.map((student) => {
-              const avatar = getStudentAvatar(student.avatar);
               return (
               <TableRow key={student.id}>
-                <TableCell className="hidden sm:table-cell">
-                  <Avatar>
-                    <AvatarImage src={avatar?.imageUrl} alt={student.name} data-ai-hint={avatar?.imageHint} />
-                    <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                </TableCell>
                 <TableCell className="font-medium">{student.name}</TableCell>
                 <TableCell>Standard {student.class}</TableCell>
                 <TableCell className="hidden md:table-cell">{student.id}</TableCell>

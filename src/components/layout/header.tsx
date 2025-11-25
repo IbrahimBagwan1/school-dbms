@@ -9,14 +9,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { LogOut, User } from 'lucide-react';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { LogOut, User, UserCircle2 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
 export function AppHeader() {
-  const userAvatar = PlaceHolderImages.find((img) => img.id === 'user-avatar');
   const pathname = usePathname();
 
   const getPageTitle = (path: string) => {
@@ -36,8 +34,9 @@ export function AppHeader() {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" className="rounded-full">
             <Avatar>
-              <AvatarImage src={userAvatar?.imageUrl} alt="User avatar" data-ai-hint={userAvatar?.imageHint} />
-              <AvatarFallback>U</AvatarFallback>
+              <AvatarFallback>
+                <UserCircle2 />
+              </AvatarFallback>
             </Avatar>
             <span className="sr-only">Toggle user menu</span>
           </Button>

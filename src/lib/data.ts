@@ -27,7 +27,6 @@ const generateStudents = (): Student[] => {
         id: `S${String(studentIdCounter++).padStart(3, '0')}`,
         name: name,
         class: String(standard),
-        avatar: `student-${generateRandomNumber(1, 6)}`,
         grades: generateGrades(baseGrade),
         attendance: generateRandomNumber(70, 100),
         studyHours: generateRandomNumber(2, 20),
@@ -40,14 +39,14 @@ const generateStudents = (): Student[] => {
 export const students: Student[] = generateStudents();
 
 export const teachers: Teacher[] = [
-  { id: 'T01', name: 'Mr. Anil Kumar', subject: 'Mathematics', avatar: 'teacher-1', contact: 'akumar@example.com' },
-  { id: 'T02', name: 'Ms. Sunita Sharma', subject: 'Physics', avatar: 'teacher-2', contact: 'ssharma@example.com' },
-  { id: 'T03', name: 'Dr. Rajesh Singh', subject: 'Chemistry', avatar: 'teacher-3', contact: 'rsingh@example.com' },
-  { id: 'T04', name: 'Mrs. Priya Patel', subject: 'English', avatar: 'teacher-4', contact: 'ppatel@example.com' },
-  { id: 'T05', name: 'Mr. Vikram Rao', subject: 'History', avatar: 'teacher-1', contact: 'vrao@example.com' },
-  { id: 'T06', name: 'Ms. Deepa Iyer', subject: 'Biology', avatar: 'teacher-2', contact: 'diyer@example.com' },
-  { id: 'T07', name: 'Mr. Sanjay Mehta', subject: 'Computer Science', avatar: 'teacher-3', contact: 'smehta@example.com' },
-  { id: 'T08', name: 'Mrs. Aarti Gupta', subject: 'Hindi', avatar: 'teacher-4', contact: 'agupta@example.com' },
+  { id: 'T01', name: 'Mr. Anil Kumar', subject: 'Mathematics', contact: 'akumar@example.com' },
+  { id: 'T02', name: 'Ms. Sunita Sharma', subject: 'Physics', contact: 'ssharma@example.com' },
+  { id: 'T03', name: 'Dr. Rajesh Singh', subject: 'Chemistry', contact: 'rsingh@example.com' },
+  { id: 'T04', name: 'Mrs. Priya Patel', subject: 'English', contact: 'ppatel@example.com' },
+  { id: 'T05', name: 'Mr. Vikram Rao', subject: 'History', contact: 'vrao@example.com' },
+  { id: 'T06', name: 'Ms. Deepa Iyer', subject: 'Biology', contact: 'diyer@example.com' },
+  { id: 'T07', name: 'Mr. Sanjay Mehta', subject: 'Computer Science', contact: 'smehta@example.com' },
+  { id: 'T08', name: 'Mrs. Aarti Gupta', subject: 'Hindi', contact: 'agupta@example.com' },
 ];
 
 export const courses: Course[] = [

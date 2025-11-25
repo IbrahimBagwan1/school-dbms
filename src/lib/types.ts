@@ -2,7 +2,6 @@ export interface Student {
   id: string;
   name: string;
   class: string;
-  avatar: string;
   grades: number[];
   attendance: number;
   studyHours: number;
@@ -12,7 +11,6 @@ export interface Teacher {
   id: string;
   name: string;
   subject: string;
-  avatar: string;
   contact: string;
 }
 
