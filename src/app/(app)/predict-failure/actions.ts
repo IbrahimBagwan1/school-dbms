@@ -11,34 +11,22 @@ import {
   type PredictClassFailureOutput,
 } from '@/ai/flows/predict-class-failure';
 import { students } from '@/lib/data';
-
 import { z } from 'zod';
 
 const SingleStudentActionSchema = z.object({
-  studentId: z.string().min(1, 'Please select a student.'),
-  grades: z
-    .string()
-    .transform(s =>
-      s
-        .split(',')
-        .map(str => str.trim())
-        .filter(str => str !== '')
-        .map(Number)
-        .filter(num => !isNaN(num) && num >= 0 && num <= 100)
-    )
-    .refine(arr => arr.length > 0, {
-      message: 'Grades must be a comma-separated list of valid numbers.',
-    }),
-  attendanceRate: z.coerce.number().min(0).max(100).transform(n => n / 100),
-  studyHoursPerWeek: z.coerce.number().min(0),
+  studentId: z.string().min(1, 'Student ID is missing.'),
+  grades: z.array(z.number()),
+  attendanceRate: z.number().min(0).max(1),
+  studyHoursPerWeek: z.number().min(0),
   testDifficulty: z.enum(['easy', 'medium', 'hard']),
-  classAverageGrade: z.coerce.number().min(0).max(100),
+  classAverageGrade: z.number().min(0).max(100),
 });
 
 const ClassActionSchema = z.object({
-  classId: z.string().min(1, 'Please select a class.'),
+  classId: z.string().min(1, 'Class ID is missing.'),
   testDifficulty: z.enum(['easy', 'medium', 'hard']),
 });
+
 
 export type SinglePredictionState = {
   type: 'single';
@@ -54,17 +42,29 @@ export type ClassPredictionState = {
 
 export type PredictionState = SinglePredictionState | ClassPredictionState;
 
+function parseGrades(gradesStr: string | null): number[] {
+    if (!gradesStr) return [];
+    return gradesStr
+        .split(',')
+        .map(str => str.trim())
+        .filter(str => str !== '')
+        .map(Number)
+        .filter(num => !isNaN(num) && num >= 0 && num <= 100);
+}
+
+
 export async function runSinglePrediction(
   prevState: SinglePredictionState,
   formData: FormData
 ): Promise<SinglePredictionState> {
+
   const rawFormData = {
-    studentId: formData.get('studentId') || '',
-    grades: formData.get('grades') || '',
-    attendanceRate: formData.get('attendanceRate') || '',
-    studyHoursPerWeek: formData.get('studyHoursPerWeek') || '',
-    testDifficulty: formData.get('testDifficulty') || 'medium',
-    classAverageGrade: formData.get('classAverageGrade') || '0',
+    studentId: formData.get('studentId'),
+    grades: parseGrades(formData.get('grades') as string | null),
+    attendanceRate: Number(formData.get('attendanceRate') || 0) / 100,
+    studyHoursPerWeek: Number(formData.get('studyHoursPerWeek') || 0),
+    testDifficulty: formData.get('testDifficulty'),
+    classAverageGrade: Number(formData.get('classAverageGrade') || 0),
   };
 
   const validatedFields = SingleStudentActionSchema.safeParse(rawFormData);
@@ -98,9 +98,10 @@ export async function runClassPrediction(
   prevState: ClassPredictionState,
   formData: FormData
 ): Promise<ClassPredictionState> {
+
   const rawFormData = {
-    classId: formData.get('classId') || '',
-    testDifficulty: formData.get('testDifficulty') || 'medium',
+    classId: formData.get('classId'),
+    testDifficulty: formData.get('testDifficulty'),
   };
 
   const validatedFields = ClassActionSchema.safeParse(rawFormData);
@@ -124,7 +125,7 @@ export async function runClassPrediction(
     }
 
     const classAvg = classStudents.length > 0
-        ? classStudents.reduce((acc, s) => acc + (s.grades.reduce((a, b) => a + b, 0) / s.grades.length), 0) 
+        ? classStudents.reduce((acc, s) => acc + (s.grades.reduce((a, b) => a + b, 0) / (s.grades.length || 1)), 0) 
           / classStudents.length
         : 75;
 

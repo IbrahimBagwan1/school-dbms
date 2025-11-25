@@ -1,8 +1,6 @@
-
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useActionState, useTransition } from 'react';
+import { useEffect, useState, useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { runSinglePrediction, type SinglePredictionState } from './actions';
 import { useToast } from '@/hooks/use-toast';
@@ -74,7 +72,7 @@ export function PredictionForm() {
       setStudyHoursPerWeek(String(student.studyHours));
       const classStudents = students.filter(s => s.class === student.class);
       const classAvg = classStudents.length > 0
-        ? classStudents.reduce((acc, s) => acc + (s.grades.reduce((a, b) => a + b, 0) / s.grades.length), 0) 
+        ? classStudents.reduce((acc, s) => acc + (s.grades.reduce((a, b) => a + b, 0) / (s.grades.length || 1)), 0) 
           / classStudents.length
         : 75;
       setClassAverageGrade(classAvg.toFixed(0));

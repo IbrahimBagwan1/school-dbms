@@ -1,8 +1,6 @@
-
 'use client';
 
-import { useEffect, useMemo } from 'react';
-import { useActionState } from 'react';
+import { useEffect, useMemo, useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { runClassPrediction, type ClassPredictionState } from './actions';
 import { useToast } from '@/hooks/use-toast';
@@ -65,7 +63,7 @@ export function ClassPredictionForm() {
         <CardContent className="space-y-4">
             <div className="space-y-2">
                 <Label htmlFor="classId">Class</Label>
-                <Select name="classId" required>
+                <Select name="classId" required defaultValue="1">
                     <SelectTrigger id="classId">
                         <SelectValue placeholder="Select a class" />
                     </SelectTrigger>
