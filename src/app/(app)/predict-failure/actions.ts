@@ -55,6 +55,7 @@ export type ClassPredictionState = {
 export type PredictionState = SinglePredictionState | ClassPredictionState;
 
 export async function runSinglePrediction(
+  prevState: SinglePredictionState | undefined,
   formData: FormData
 ): Promise<SinglePredictionState> {
   const rawFormData = {
