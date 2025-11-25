@@ -1,10 +1,12 @@
 
 'use client';
 
-import { useEffect, useMemo, useActionState, useTransition } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { runClassPrediction, type ClassPredictionState } from './actions';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,10 +32,11 @@ const initialState: ClassPredictionState = {
   error: null,
 };
 
-function SubmitButton({ isPending }: { isPending: boolean }) {
+function SubmitButton() {
+  const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={isPending} className="w-full">
-      {isPending ? 'Analyzing...' : <><Zap className="mr-2" /> Run Class Prediction</>}
+    <Button type="submit" disabled={pending} className="w-full">
+      {pending ? 'Analyzing...' : <><Zap className="mr-2" /> Run Class Prediction</>}
     </Button>
   );
 }
@@ -41,7 +44,6 @@ function SubmitButton({ isPending }: { isPending: boolean }) {
 export function ClassPredictionForm() {
   const { toast } = useToast();
   const [state, formAction] = useActionState(runClassPrediction, initialState);
-  const [isPending, startTransition] = useTransition();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(FormSchema),
@@ -65,17 +67,6 @@ export function ClassPredictionForm() {
     return [...Array.from({ length: 10 }, (_, i) => String(i + 1))];
   }, []);
 
-  const onFormSubmit = (data: FormValues) => {
-    const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-      formData.append(key, value);
-    });
-
-    startTransition(() => {
-        formAction(formData);
-    });
-  };
-  
   return (
     <div className="grid gap-8 lg:grid-cols-3">
       <Card className="lg:col-span-1">
@@ -87,7 +78,7 @@ export function ClassPredictionForm() {
         </CardHeader>
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(onFormSubmit)}
+            action={formAction}
             className="space-y-6"
           >
             <CardContent className="space-y-4">
@@ -139,7 +130,7 @@ export function ClassPredictionForm() {
               />
             </CardContent>
             <CardFooter>
-              <SubmitButton isPending={isPending} />
+              <SubmitButton />
             </CardFooter>
           </form>
         </Form>

@@ -1,10 +1,12 @@
 
 'use client';
 
-import { useEffect, useState, useActionState, useTransition } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { runSinglePrediction, type SinglePredictionState } from './actions';
 import { useToast } from '@/hooks/use-toast';
 import { students as staticStudents } from '@/lib/data';
@@ -40,10 +42,11 @@ const initialState: SinglePredictionState = {
   error: null,
 };
 
-function SubmitButton({ isPending }: { isPending: boolean }) {
+function SubmitButton() {
+  const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={isPending} className="w-full">
-      {isPending ? 'Analyzing...' : <> <Zap className="mr-2" /> Run Prediction</>}
+    <Button type="submit" disabled={pending} className="w-full">
+      {pending ? 'Analyzing...' : <> <Zap className="mr-2" /> Run Prediction</>}
     </Button>
   );
 }
@@ -51,7 +54,6 @@ function SubmitButton({ isPending }: { isPending: boolean }) {
 export function PredictionForm() {
   const { toast } = useToast();
   const [state, formAction] = useActionState(runSinglePrediction, initialState);
-  const [isPending, startTransition] = useTransition();
   const [students, setStudents] = useState<Student[]>([]);
   const [popoverOpen, setPopoverOpen] = useState(false);
   
@@ -98,17 +100,6 @@ export function PredictionForm() {
     setPopoverOpen(false);
   };
 
-  const onFormSubmit = (data: FormValues) => {
-    const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-      formData.append(key, value);
-    });
-    
-    startTransition(() => {
-      formAction(formData);
-    });
-  };
-
   return (
     <div className="grid gap-8 md:grid-cols-2">
       <Card>
@@ -120,7 +111,7 @@ export function PredictionForm() {
         </CardHeader>
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(onFormSubmit)}
+            action={formAction}
           >
             <CardContent className="space-y-4">
               <FormField
@@ -179,6 +170,7 @@ export function PredictionForm() {
                         </Command>
                       </PopoverContent>
                     </Popover>
+                    <input type="hidden" {...field} name={field.name} />
                     <FormMessage />
                   </FormItem>
                 )}
@@ -190,7 +182,7 @@ export function PredictionForm() {
               <FormField control={form.control} name="classAverageGrade" render={({ field }) => ( <FormItem><FormLabel>Class Average Grade</FormLabel><FormControl><Input {...field} type="number" /></FormControl><FormMessage /></FormItem> )} />
             </CardContent>
             <CardFooter>
-             <SubmitButton isPending={isPending} />
+             <SubmitButton />
             </CardFooter>
           </form>
         </Form>
