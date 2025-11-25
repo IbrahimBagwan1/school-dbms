@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useFormState } from 'react-dom';
 import { runSinglePrediction, type SinglePredictionState } from './actions';
 import { useToast } from '@/hooks/use-toast';
 import { students } from '@/lib/data';
@@ -40,7 +41,7 @@ const initialState: SinglePredictionState = {
 
 export function PredictionForm() {
   const { toast } = useToast();
-  const [state, setState] = useState<SinglePredictionState>(initialState);
+  const [state, formAction] = useFormState(runSinglePrediction, initialState);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<FormValues>({
@@ -62,9 +63,8 @@ export function PredictionForm() {
         title: 'Prediction Error',
         description: state.error,
       });
-      // Reset error to allow re-toasting
-      setState(s => ({ ...s, error: null }));
     }
+    setIsSubmitting(false);
   }, [state, toast]);
 
   const onStudentChange = (studentId: string) => {
@@ -83,16 +83,13 @@ export function PredictionForm() {
     }
   };
 
-  const onSubmit = async (values: FormValues) => {
+  const onSubmit = (data: FormValues) => {
     setIsSubmitting(true);
     const formData = new FormData();
-    Object.entries(values).forEach(([key, value]) => {
-      formData.append(key, String(value));
+    Object.entries(data).forEach(([key, value]) => {
+      formData.append(key, value);
     });
-    
-    const result = await runSinglePrediction(undefined, formData);
-    setState(result);
-    setIsSubmitting(false);
+    formAction(formData);
   };
 
 
@@ -171,7 +168,7 @@ export function PredictionForm() {
               <FormField control={form.control} name="grades" render={({ field }) => ( <FormItem><FormLabel>Historical Grades</FormLabel><FormControl><Input {...field} placeholder="e.g., 85, 92, 78, 88" /></FormControl><FormMessage /></FormItem> )} />
               <FormField control={form.control} name="attendanceRate" render={({ field }) => ( <FormItem><FormLabel>Attendance Rate (%)</FormLabel><FormControl><Input {...field} type="number" /></FormControl><FormMessage /></FormItem> )} />
               <FormField control={form.control} name="studyHoursPerWeek" render={({ field }) => ( <FormItem><FormLabel>Study Hours Per Week</FormLabel><FormControl><Input {...field} type="number" /></FormControl><FormMessage /></FormItem> )} />
-              <FormField control={form.control} name="testDifficulty" render={({ field }) => ( <FormItem><FormLabel>Upcoming Test Difficulty</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="easy">Easy</SelectItem><SelectItem value="medium">Medium</SelectItem><SelectItem value="hard">Hard</SelectItem></SelectContent></Select><FormMessage /></FormItem> )} />
+              <FormField control={form.control} name="testDifficulty" render={({ field }) => ( <FormItem><FormLabel>Upcoming Test Difficulty</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="easy">Easy</SelectItem><SelectItem value="medium">Medium</SelectItem><SelectItem value="hard">Hard</SelectItem></SelectContent></Select><FormMessage /></FormItem> )} />
               <FormField control={form.control} name="classAverageGrade" render={({ field }) => ( <FormItem><FormLabel>Class Average Grade</FormLabel><FormControl><Input {...field} type="number" /></FormControl><FormMessage /></FormItem> )} />
             </CardContent>
             <CardFooter>

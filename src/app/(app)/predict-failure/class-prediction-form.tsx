@@ -4,13 +4,14 @@ import { useEffect, useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { runClassPrediction, type ClassPredictionState, type AtRiskStudent } from './actions';
+import { useFormState } from 'react-dom';
+import { runClassPrediction, type ClassPredictionState } from './actions';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertCircle, BrainCircuit, CheckCircle, Info, TrendingUp, Zap } from 'lucide-react';
+import { BrainCircuit, CheckCircle, Info, TrendingUp, Zap } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -31,7 +32,7 @@ const initialState: ClassPredictionState = {
 
 export function ClassPredictionForm() {
   const { toast } = useToast();
-  const [state, setState] = useState<ClassPredictionState>(initialState);
+  const [state, formAction] = useFormState(runClassPrediction, initialState);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<FormValues>({
@@ -49,25 +50,21 @@ export function ClassPredictionForm() {
         title: 'Prediction Error',
         description: state.error,
       });
-      // Reset error to allow re-toasting
-      setState(s => ({ ...s, error: null }));
     }
+    setIsSubmitting(false);
   }, [state, toast]);
 
   const classOptions = useMemo(() => {
     return [...Array.from({ length: 10 }, (_, i) => String(i + 1))];
   }, []);
 
-  const onSubmit = async (values: FormValues) => {
+  const onSubmit = (data: FormValues) => {
     setIsSubmitting(true);
     const formData = new FormData();
-    Object.entries(values).forEach(([key, value]) => {
-      formData.append(key, String(value));
+    Object.entries(data).forEach(([key, value]) => {
+      formData.append(key, value);
     });
-    
-    const result = await runClassPrediction(formData);
-    setState(result);
-    setIsSubmitting(false);
+    formAction(formData);
   };
   
   return (
@@ -88,7 +85,7 @@ export function ClassPredictionForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Class</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a class" />
@@ -112,7 +109,7 @@ export function ClassPredictionForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Upcoming Test Difficulty</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue />

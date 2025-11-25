@@ -65,6 +65,7 @@ export default function DashboardPage() {
 
   
   const attendanceData = useMemo(() => {
+    if (!isClient) return [];
     // This is mock data as we don't have monthly attendance
     return [
       { month: 'Jan', attendance: generateClassAttendance(92) },
@@ -118,7 +119,7 @@ export default function DashboardPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalStudents > 0 ? totalStudents : '...'}</div>
+            <div className="text-2xl font-bold">{isClient ? totalStudents : '...'}</div>
           </CardContent>
         </Card>
         <Card>
@@ -145,7 +146,7 @@ export default function DashboardPage() {
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{avgAttendance}%</div>
+            <div className="text-2xl font-bold">{isClient ? `${avgAttendance}%` : '...'}</div>
           </CardContent>
         </Card>
 
@@ -202,5 +203,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
