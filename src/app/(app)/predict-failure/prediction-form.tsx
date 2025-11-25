@@ -106,7 +106,16 @@ export function PredictionForm() {
           </CardDescription>
         </CardHeader>
         <Form {...form}>
-          <form action={formAction}>
+          <form
+            action={form.handleSubmit(() => {
+                const formData = new FormData();
+                const values = form.getValues();
+                Object.keys(values).forEach(key => {
+                    formData.append(key, (values as any)[key]);
+                });
+                formAction(formData);
+            })}
+          >
             <CardContent className="space-y-4">
               <FormField
                 control={form.control}
@@ -164,7 +173,7 @@ export function PredictionForm() {
                         </Command>
                       </PopoverContent>
                     </Popover>
-                    <input type="hidden" {...field} />
+                    <input type="hidden" {...form.register('studentId')} />
                     <FormMessage />
                   </FormItem>
                 )}

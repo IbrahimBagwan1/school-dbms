@@ -75,7 +75,16 @@ export function ClassPredictionForm() {
           </CardDescription>
         </CardHeader>
         <Form {...form}>
-          <form action={formAction} className="space-y-6">
+          <form
+            action={form.handleSubmit(() => {
+                const formData = new FormData();
+                const values = form.getValues();
+                formData.append('classId', values.classId);
+                formData.append('testDifficulty', values.testDifficulty);
+                formAction(formData);
+            })}
+            className="space-y-6"
+          >
             <CardContent className="space-y-4">
               <FormField
                 control={form.control}
