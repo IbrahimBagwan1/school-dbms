@@ -1,7 +1,7 @@
+
 'use client';
 
 import { useEffect, useState, useActionState, useTransition } from 'react';
-import { useFormStatus } from 'react-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -40,11 +40,10 @@ const initialState: SinglePredictionState = {
   error: null,
 };
 
-function SubmitButton() {
-  const { pending } = useFormStatus();
+function SubmitButton({ isPending }: { isPending: boolean }) {
   return (
-    <Button type="submit" disabled={pending} className="w-full">
-      {pending ? 'Analyzing...' : <> <Zap className="mr-2" /> Run Prediction</>}
+    <Button type="submit" disabled={isPending} className="w-full">
+      {isPending ? 'Analyzing...' : <> <Zap className="mr-2" /> Run Prediction</>}
     </Button>
   );
 }
@@ -52,6 +51,7 @@ function SubmitButton() {
 export function PredictionForm() {
   const { toast } = useToast();
   const [state, formAction] = useActionState(runSinglePrediction, initialState);
+  const [isPending, startTransition] = useTransition();
   const [students, setStudents] = useState<Student[]>([]);
   const [popoverOpen, setPopoverOpen] = useState(false);
   
@@ -95,7 +95,7 @@ export function PredictionForm() {
         : 75;
       form.setValue('classAverageGrade', classAvg.toFixed(0));
     }
-    setPopoverOpen(false); // Close popover on selection
+    setPopoverOpen(false);
   };
 
   const onFormSubmit = (data: FormValues) => {
@@ -103,7 +103,10 @@ export function PredictionForm() {
     Object.entries(data).forEach(([key, value]) => {
       formData.append(key, value);
     });
-    formAction(formData);
+    
+    startTransition(() => {
+      formAction(formData);
+    });
   };
 
   return (
@@ -187,7 +190,7 @@ export function PredictionForm() {
               <FormField control={form.control} name="classAverageGrade" render={({ field }) => ( <FormItem><FormLabel>Class Average Grade</FormLabel><FormControl><Input {...field} type="number" /></FormControl><FormMessage /></FormItem> )} />
             </CardContent>
             <CardFooter>
-             <SubmitButton />
+             <SubmitButton isPending={isPending} />
             </CardFooter>
           </form>
         </Form>

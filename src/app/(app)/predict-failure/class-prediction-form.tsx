@@ -1,7 +1,7 @@
+
 'use client';
 
-import { useEffect, useMemo, useActionState, useState } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useEffect, useMemo, useActionState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -30,11 +30,10 @@ const initialState: ClassPredictionState = {
   error: null,
 };
 
-function SubmitButton() {
-  const { pending } = useFormStatus();
+function SubmitButton({ isPending }: { isPending: boolean }) {
   return (
-    <Button type="submit" disabled={pending} className="w-full">
-      {pending ? 'Analyzing...' : <><Zap className="mr-2" /> Run Class Prediction</>}
+    <Button type="submit" disabled={isPending} className="w-full">
+      {isPending ? 'Analyzing...' : <><Zap className="mr-2" /> Run Class Prediction</>}
     </Button>
   );
 }
@@ -42,6 +41,7 @@ function SubmitButton() {
 export function ClassPredictionForm() {
   const { toast } = useToast();
   const [state, formAction] = useActionState(runClassPrediction, initialState);
+  const [isPending, startTransition] = useTransition();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(FormSchema),
@@ -64,6 +64,17 @@ export function ClassPredictionForm() {
   const classOptions = useMemo(() => {
     return [...Array.from({ length: 10 }, (_, i) => String(i + 1))];
   }, []);
+
+  const onFormSubmit = (data: FormValues) => {
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      formData.append(key, value);
+    });
+
+    startTransition(() => {
+        formAction(formData);
+    });
+  };
   
   return (
     <div className="grid gap-8 lg:grid-cols-3">
@@ -76,7 +87,7 @@ export function ClassPredictionForm() {
         </CardHeader>
         <Form {...form}>
           <form
-            action={formAction}
+            onSubmit={form.handleSubmit(onFormSubmit)}
             className="space-y-6"
           >
             <CardContent className="space-y-4">
@@ -128,7 +139,7 @@ export function ClassPredictionForm() {
               />
             </CardContent>
             <CardFooter>
-              <SubmitButton />
+              <SubmitButton isPending={isPending} />
             </CardFooter>
           </form>
         </Form>
