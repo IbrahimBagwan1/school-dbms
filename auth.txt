@@ -1,0 +1,9 @@
+ID   Email ID                    Encrypted Password                              Role     Ref_ID
+8    student1@school.edu         $2b$10$XyZAbcPqWl9K8MNoPSeR7u...                 Student  10
+9    student2@school.edu         $2b$10$FZ7JnYHjTm7oVuGdIP0x2D...                 Student  12
+10   student3@school.edu         $2b$10$IbQsWmWKedAq93rLdeCMK...                 Student  15
+11   student4@gmail.com          $2b$10$Fak9UskVJ3TFTYh.vu93i...                 Student  17
+12   student5@gmail.com          $2b$10$hWmZSn5WyD7QQCFfWg.Lu...                 Student  18
+13   teacher1@gmail.com          $2b$10$P9A6fyV32OVCdVGbD8Ek...                 Faculty   6
+14   admin@school.edu            $2b$10$0xYJM5uJ8PKeFpPQ17Zb0...                 Admin     2
+15   student6@school.edu         $2b$10$YmBoJGbvCoIs8Beg4G.Zw...                 Student  20

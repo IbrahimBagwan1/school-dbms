@@ -1,5 +1,5 @@
 export const indianBoyNames = [
-  'Aarav', 'Vihaan', 'Aditya', 'Sai', 'Arjun', 'Aryan', 'Reyansh', 'Mohammed', 'Krishna',
+  'Aarav', 'Vihaan', 'Aditya', 'Sai', 'Arjun', 'Aryan', 'Reyansh', 'Krishna',
   'Ishaan', 'Shaurya', 'Atharv', 'Advik', 'Kabir', 'Ansh', 'Vivaan', 'Rudra', 'Parth',
   'Yusuf', 'Veer', 'Dhruv', 'Neel', 'Laksh', 'Ritvik', 'Samarth', 'Yash', 'Zayn'
 ];

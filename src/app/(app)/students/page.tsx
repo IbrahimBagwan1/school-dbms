@@ -50,10 +50,28 @@ export default function StudentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [isClient, setIsClient] = useState(false);
 
-  useEffect(() => {
+  //   useEffect(() => {
+  //   async function loadStudents() {
+  //     try {
+  //       const res = await fetch('/api/students');
+  //       const data: Student[] = await res.json();
+  //       setStudents(data);
+  //     } catch (err) {
+  //       console.error('Failed to load students', err);
+  //     } finally {
+  //       setIsClient(true);
+  //     }
+  //   }
+
+  //   loadStudents();
+  // }, []);
+
+    useEffect(() => {
     setStudents(staticStudents);
     setIsClient(true);
   }, []);
+
+
 
   const filteredStudents = useMemo(() => {
     return students.filter(student => {
